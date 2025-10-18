@@ -1,7 +1,12 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { Patient, PatientFilters, PatientSegment, RenewalData } from "@/types/database";
+import {
+  Patient,
+  PatientFilters,
+  PatientSegment,
+  RenewalData,
+} from "@/types/database";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
@@ -213,7 +218,7 @@ export function useBulkOperations() {
             newTags = [...new Set([...newTags, ...tags])];
             break;
           case "remove":
-            newTags = newTags.filter((tag) => !tags.includes(tag));
+            newTags = newTags.filter((tag: string) => !tags.includes(tag));
             break;
           case "replace":
             newTags = tags;
@@ -284,51 +289,16 @@ export function useRenewalTracking() {
   } = useQuery({
     queryKey: ["renewals"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .select(
-          `
-          *,
-          leads (
-            id,
-            first_name,
-            last_name,
-            phone_number,
-            email
-          )
-        `
-        )
-        .order("renewal_date", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
+      // TODO: Implement when renewal_data table is available
+      return [];
     },
   });
 
   const { data: dueRenewals } = useQuery({
     queryKey: ["renewals", "due"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const { data, error } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .select(
-          `
-          *,
-          leads (
-            id,
-            first_name,
-            last_name,
-            phone_number,
-            email
-          )
-        `
-        )
-        .lte("renewal_date", today)
-        .eq("status", "pending")
-        .order("renewal_date", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
+      // TODO: Implement when renewal_data table is available
+      return [];
     },
   });
 
@@ -336,14 +306,9 @@ export function useRenewalTracking() {
     mutationFn: async (
       renewalData: Omit<RenewalData, "id" | "created_at" | "updated_at">
     ) => {
-      const { data, error } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .insert(renewalData)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      // TODO: Implement when renewal_data table is available
+      console.log("Create renewal:", renewalData);
+      return { id: "placeholder", ...renewalData };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["renewals"] });
@@ -358,15 +323,9 @@ export function useRenewalTracking() {
       id: string;
       updates: Partial<RenewalData>;
     }) => {
-      const { data, error } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      // TODO: Implement when renewal_data table is available
+      console.log("Update renewal:", id, updates);
+      return { id, ...updates };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["renewals"] });
@@ -375,19 +334,12 @@ export function useRenewalTracking() {
 
   const sendRenewalRemindersMutation = useMutation({
     mutationFn: async (renewalIds: string[]) => {
-      // This would integrate with your SMS service
-      // For now, we'll just update the last_reminder timestamp
-      const { data, error } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .update({
-          last_reminder: new Date().toISOString(),
-          notifications_sent: supabase.rpc("increment_notifications_sent"),
-        })
-        .in("id", renewalIds)
-        .select();
-
-      if (error) throw error;
-      return data;
+      // TODO: Implement when renewal_data table is available
+      console.log("Send renewal reminders:", renewalIds);
+      return renewalIds.map((id) => ({
+        id,
+        last_reminder: new Date().toISOString(),
+      }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["renewals"] });
@@ -419,13 +371,8 @@ export function usePatientSegmentation() {
   } = useQuery({
     queryKey: ["segments"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        // .from("patient_segments") // DISABLED: Table does not exist
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      // TODO: Implement when patient_segments table is available
+      return [];
     },
   });
 
@@ -433,14 +380,9 @@ export function usePatientSegmentation() {
     mutationFn: async (
       segment: Omit<PatientSegment, "id" | "created_at" | "updated_at">
     ) => {
-      const { data, error } = await supabase
-        // .from("patient_segments") // DISABLED: Table does not exist
-        .insert(segment)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      // TODO: Implement when patient_segments table is available
+      console.log("Create segment:", segment);
+      return { id: "placeholder", ...segment };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["segments"] });
@@ -455,15 +397,9 @@ export function usePatientSegmentation() {
       id: string;
       updates: Partial<PatientSegment>;
     }) => {
-      const { data, error } = await supabase
-        // .from("patient_segments") // DISABLED: Table does not exist
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      // TODO: Implement when patient_segments table is available
+      console.log("Update segment:", id, updates);
+      return { id, ...updates };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["segments"] });
@@ -472,11 +408,8 @@ export function usePatientSegmentation() {
 
   const deleteSegmentMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        // .from("patient_segments") // DISABLED: Table does not exist
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      // TODO: Implement when patient_segments table is available
+      console.log("Delete segment:", id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["segments"] });
@@ -539,16 +472,8 @@ export function usePatientAnalytics() {
       }, {} as Record<string, number>);
 
       // Get renewal analytics
-      const { data: renewalData, error: renewalError } = await supabase
-        // .from("renewal_data") // DISABLED: Table does not exist
-        .select("status, renewal_date");
-
-      if (renewalError) throw renewalError;
-
-      const renewalCounts = renewalData?.reduce((acc, renewal) => {
-        acc[renewal.status] = (acc[renewal.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      // TODO: Implement when renewal_data table is available
+      const renewalCounts = {};
 
       return {
         statusCounts: statusCounts || {},

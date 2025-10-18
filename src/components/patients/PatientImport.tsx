@@ -3,12 +3,13 @@
 import { ImportOptions, ImportResult } from "@/app/api/patients/import/route";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import * as XLSX from "xlsx";
 
 interface ContactImportProps {
   onImportComplete?: (result: ImportResult) => void;
   onImportStart?: () => void;
+  onImportError?: (error: string) => void;
   onComplete?: () => void;
+  onRefetch?: () => void;
 }
 
 interface ImportProgress {
@@ -25,10 +26,12 @@ interface ImportProgress {
  * Provides drag-and-drop file upload, CSV validation, import options,
  * progress tracking, and detailed results display.
  */
-export const PatientImport: React.FC<PatientImportProps> = ({
+export const PatientImport: React.FC<ContactImportProps> = ({
   onImportComplete,
   onImportStart,
+  onImportError,
   onComplete,
+  onRefetch,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importOptions, setImportOptions] = useState<ImportOptions>({
@@ -51,14 +54,12 @@ export const PatientImport: React.FC<PatientImportProps> = ({
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     const fileExtension = file?.name.toLowerCase().split(".").pop();
-    if (file && ["csv", "xlsx", "xls"].includes(fileExtension || "")) {
+    if (file && fileExtension === "csv") {
       setSelectedFile(file);
       setErrors([]);
       setImportResult(null);
     } else {
-      setErrors([
-        "Please select a valid CSV or Excel file (.csv, .xlsx, .xls)",
-      ]);
+      setErrors(["Please select a valid CSV file (.csv)"]);
     }
   }, []);
 
@@ -66,10 +67,6 @@ export const PatientImport: React.FC<PatientImportProps> = ({
     onDrop,
     accept: {
       "text/csv": [".csv"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-        ".xlsx",
-      ],
-      "application/vnd.ms-excel": [".xls"],
     },
     multiple: false,
   });
@@ -100,49 +97,36 @@ export const PatientImport: React.FC<PatientImportProps> = ({
         message: "Starting import...",
       });
 
-      // Start polling for progress updates
-      const progressInterval = setInterval(async () => {
-        try {
-          const progressResponse = await fetch(
-            `/api/patients/import/progress?sessionId=${sessionId}`
-          );
-          if (progressResponse.ok) {
-            const progressData = await progressResponse.json();
-            setProgress({
-              stage:
-                progressData.status === "completed"
-                  ? "completed"
-                  : progressData.status === "error"
-                  ? "error"
-                  : "processing",
-              progress: progressData.progress || 0,
-              message: progressData.message || "Processing...",
-              current: progressData.current || 0,
-              total: progressData.total || 0,
-            });
-
-            if (
-              progressData.status === "completed" ||
-              progressData.status === "error"
-            ) {
-              clearInterval(progressInterval);
-            }
+      // Start a progress animation while waiting for API response
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev.stage === "processing" && prev.progress < 90) {
+            return {
+              ...prev,
+              progress: Math.min(prev.progress + 5, 90),
+              message: `Processing contacts... ${prev.progress}%`,
+            };
           }
-        } catch (error) {
-          console.error("Error fetching progress:", error);
-        }
-      }, 1000); // Poll every 1 second
+          return prev;
+        });
+      }, 500);
 
       const response = await fetch("/api/patients/import", {
         method: "POST",
         body: formData,
       });
 
-      const result = await response.json();
+      // Clear the progress animation
       clearInterval(progressInterval);
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
       if (result.success) {
-        // Use progress information from API response
+        // Import completed successfully
         const apiProgress = result.progress;
 
         setProgress({
@@ -152,18 +136,16 @@ export const PatientImport: React.FC<PatientImportProps> = ({
           current: apiProgress?.current || result.data?.totalRows || 0,
           total: apiProgress?.total || result.data?.totalRows || 0,
         });
+
         setImportResult(result.data);
         onImportComplete?.(result.data);
       } else {
-        const apiProgress = result.progress;
         setProgress({
           stage: "error",
-          progress: apiProgress?.progress || 0,
-          message: apiProgress?.message || result.error,
-          current: apiProgress?.current || 0,
-          total: apiProgress?.total || 0,
+          progress: 0,
+          message: result.error || "Import failed",
         });
-        setErrors([result.error]);
+        onImportError?.(result.error);
       }
     } catch (error) {
       setProgress({
@@ -190,52 +172,6 @@ export const PatientImport: React.FC<PatientImportProps> = ({
     });
   };
 
-  const downloadSampleTemplate = (format: "csv" | "xlsx" = "csv") => {
-    const sampleData = [
-      ["phone_number", "first_name", "last_name", "email", "company"],
-      [
-        "+1-555-0101",
-        "John",
-        "Smith",
-        "john.smith@example.com",
-        "TechCorp Inc",
-      ],
-      [
-        "+1-555-0102",
-        "Sarah",
-        "Johnson",
-        "sarah.j@example.com",
-        "HealthPlus Medical",
-      ],
-      [
-        "+1-555-0103",
-        "Mike",
-        "Chen",
-        "mike.chen@example.com",
-        "RetailMax Stores",
-      ],
-    ];
-
-    if (format === "csv") {
-      const csvContent = sampleData.map((row) => row.join(",")).join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "sample-patients.csv";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } else {
-      // Create Excel file
-      const ws = XLSX.utils.aoa_to_sheet(sampleData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Patients");
-      XLSX.writeFile(wb, "sample-patients.xlsx");
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -244,7 +180,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
           Import Patients
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Upload a CSV or Excel file to import patients in bulk
+          Upload a CSV file to import patients in bulk
         </p>
       </div>
 
@@ -275,7 +211,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                 <p className="text-lg font-medium text-gray-900 dark:text-white">
                   {isDragActive
                     ? "Drop the file here"
-                    : "Drag & drop a CSV or Excel file here"}
+                    : "Drag & drop a CSV file here"}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   or click to browse files
@@ -290,22 +226,6 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Sample Download */}
-          <div className="mt-4 text-center space-x-4">
-            <button
-              onClick={() => downloadSampleTemplate("csv")}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Download CSV template
-            </button>
-            <button
-              onClick={() => downloadSampleTemplate("xlsx")}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Download Excel template
-            </button>
           </div>
         </div>
       </div>
@@ -427,11 +347,11 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                   ? `Processing ${progress.current} of ${progress.total} contacts...`
                   : progress.message}
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-gray-500 dark:text-gray-400 hidden">
                 {progress.progress}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 ">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
                   progress.stage === "error"
@@ -469,7 +389,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
       )}
 
       {/* Success Modal */}
-      {progress.stage === "completed" && importResult && (
+      {importResult && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
@@ -490,17 +410,24 @@ export const PatientImport: React.FC<PatientImportProps> = ({
               </div>
 
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                Import Successful!
+                🎉 Import Successful!
               </h3>
 
               <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                Your contacts have been successfully imported.
+                {importResult?.summary?.newPatients > 0 &&
+                importResult?.summary?.updatedPatients > 0
+                  ? `Successfully imported ${importResult?.summary?.newPatients} new contacts and updated ${importResult?.summary?.updatedPatients} existing contacts.`
+                  : importResult?.summary?.newPatients > 0
+                  ? `Successfully imported ${importResult?.summary?.newPatients} new contacts.`
+                  : importResult?.summary?.updatedPatients > 0
+                  ? `Successfully updated ${importResult?.summary?.updatedPatients} existing contacts.`
+                  : "Import completed successfully."}
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                    {importResult.summary.newPatients}
+                    {importResult?.summary?.newPatients || 0}
                   </div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     New Contacts
@@ -508,7 +435,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                 </div>
                 <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    {importResult.summary.updatedPatients}
+                    {importResult?.summary?.updatedPatients || 0}
                   </div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     Updated
@@ -516,18 +443,19 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                 </div>
               </div>
 
-              {(importResult.summary.skippedPatients > 0 ||
-                importResult.summary.errorCount > 0) && (
+              {(importResult?.summary?.skippedPatients > 0 ||
+                importResult?.summary?.errorCount > 0) && (
                 <div className="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                   <div className="text-sm text-yellow-800 dark:text-yellow-400">
-                    {importResult.summary.skippedPatients > 0 && (
+                    {importResult?.summary?.skippedPatients > 0 && (
                       <div>
-                        {importResult.summary.skippedPatients} contacts skipped
+                        {importResult?.summary?.skippedPatients} contacts
+                        skipped
                       </div>
                     )}
-                    {importResult.summary.errorCount > 0 && (
+                    {importResult?.summary?.errorCount > 0 && (
                       <div>
-                        {importResult.summary.errorCount} errors encountered
+                        {importResult?.summary?.errorCount} errors encountered
                       </div>
                     )}
                   </div>
@@ -542,7 +470,14 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                   Import Another File
                 </button>
                 <button
-                  onClick={onComplete}
+                  onClick={() => {
+                    try {
+                      onComplete?.();
+                      onRefetch?.();
+                    } catch (error) {
+                      console.error("Error in Done button click:", error);
+                    }
+                  }}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
                 >
                   Done
@@ -564,7 +499,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {importResult.summary.newPatients}
+                  {importResult?.summary?.newPatients || 0}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   New Patients
@@ -572,7 +507,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {importResult.summary.updatedPatients}
+                  {importResult?.summary?.updatedPatients || 0}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Updated
@@ -580,7 +515,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {importResult.summary.skippedPatients}
+                  {importResult?.summary?.skippedPatients || 0}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Skipped
@@ -588,7 +523,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {importResult.summary.errorCount}
+                  {importResult?.summary?.errorCount || 0}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Errors

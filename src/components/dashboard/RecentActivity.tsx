@@ -1,16 +1,16 @@
 "use client";
 
-import { RecentActivity } from "@/hooks/useDashboardData";
+import { RecentActivity as RecentActivityType } from "@/hooks/useDashboardData";
 import React from "react";
 
 interface RecentActivityProps {
-  activities?: RecentActivity[];
-  onActivityClick?: (activity: RecentActivity) => void;
+  activities?: RecentActivityType[];
+  onActivityClick?: (activity: RecentActivityType) => void;
 }
 
 interface ActivityItemProps {
-  activity: RecentActivity;
-  onClick?: (activity: RecentActivity) => void;
+  activity: RecentActivityType;
+  onClick?: (activity: RecentActivityType) => void;
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
@@ -158,7 +158,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
   const isLoading = activities.length === 0;
 
   // Mock data for demonstration
-  const mockActivities: RecentActivity[] = [
+  const mockActivities: RecentActivityType[] = [
     {
       id: "1",
       type: "campaign",

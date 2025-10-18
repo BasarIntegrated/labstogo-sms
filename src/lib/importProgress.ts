@@ -33,6 +33,7 @@ export function updateImportProgress(
 }
 
 export function completeImportProgress(sessionId: string, result: unknown) {
+  console.log(`🎉 Completing import progress for session ${sessionId}`);
   const session = importSessions.get(sessionId);
   if (session) {
     session.status = "completed";
@@ -43,6 +44,15 @@ export function completeImportProgress(sessionId: string, result: unknown) {
     } patients imported, ${
       (result as { errors: string[] }).errors.length
     } errors`;
+    console.log(`🎉 Session marked as completed: ${session.message}`);
+
+    // Keep the session alive for 30 seconds after completion to allow frontend polling
+    setTimeout(() => {
+      console.log(`🧹 Cleaning up completed session ${sessionId}`);
+      importSessions.delete(sessionId);
+    }, 30000);
+  } else {
+    console.log(`❌ Session ${sessionId} not found for completion`);
   }
 }
 

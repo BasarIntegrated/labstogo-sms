@@ -12,10 +12,11 @@ export function useQueueStatus() {
       return response.json();
     },
     // Smart refetching - only when window is focused and user is active
-    refetchInterval: (data, query) => {
+    refetchInterval: (query) => {
       // Don't refetch if there are no active jobs
       const hasActiveJobs =
-        data?.smsQueue?.active > 0 || data?.campaignQueue?.active > 0;
+        (query.state.data?.smsQueue?.active ?? 0) > 0 ||
+        (query.state.data?.campaignQueue?.active ?? 0) > 0;
       return hasActiveJobs ? 10000 : 30000; // 10s if active, 30s if idle
     },
     // Keep data fresh for 5 seconds

@@ -1,7 +1,7 @@
 "use client";
 
-import { Patient } from "@/types/database";
 import { usePatientsManagement } from "@/hooks/usePatientsManagement";
+import { Patient, PatientFilters, RenewalData } from "@/types/database";
 import { useState } from "react";
 import AnalyticsWidgets from "./AnalyticsWidgets";
 import BulkOperations from "./BulkOperations";
@@ -28,10 +28,10 @@ export default function PatientsDashboard({
   >("table");
   const [filters, setFilters] = useState({
     search: "",
-    status: [],
-    tags: [],
-    license_type: [],
-    specialty: [],
+    status: [] as string[],
+    tags: [] as string[],
+    license_type: [] as string[],
+    specialty: [] as string[],
     created_after: "",
     created_before: "",
     phone_prefix: "",
@@ -46,12 +46,8 @@ export default function PatientsDashboard({
   });
 
   // Use the patients management hook for filtered data
-  const {
-    patients,
-    total,
-    isLoading,
-    refetch,
-  } = usePatientsManagement(filters);
+  const { patients, total, isLoading, refetch } =
+    usePatientsManagement(filters);
 
   const handleToggleSelection = (patientId: string) => {
     setSelectedPatients((prev) =>
@@ -89,8 +85,25 @@ export default function PatientsDashboard({
     console.log("Update patient status:", patientId, status);
   };
 
-  const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
+  const handleFiltersChange = (newFilters: PatientFilters) => {
+    setFilters({
+      search: newFilters.search || "",
+      status: newFilters.status || [],
+      tags: newFilters.tags || [],
+      license_type: newFilters.license_type || [],
+      specialty: newFilters.specialty || [],
+      created_after: newFilters.created_after || "",
+      created_before: newFilters.created_before || "",
+      phone_prefix: newFilters.phone_prefix || "",
+      exam_date_after: newFilters.exam_date_after || "",
+      exam_date_before: newFilters.exam_date_before || "",
+      renewal_date_after: newFilters.renewal_date_after || "",
+      renewal_date_before: newFilters.renewal_date_before || "",
+      page: newFilters.page || 0,
+      limit: newFilters.limit || 50,
+      sortBy: newFilters.sortBy || "created_at",
+      sortOrder: newFilters.sortOrder || "desc",
+    });
     // The usePatientsManagement hook will automatically refetch with new filters
   };
 
@@ -169,7 +182,7 @@ export default function PatientsDashboard({
   const handleBulkTag = async (
     patientIds: string[],
     tags: string[],
-    operation: "add" | "remove"
+    operation: "add" | "remove" | "replace"
   ) => {
     try {
       const response = await fetch("/api/patients/bulk", {
@@ -214,25 +227,27 @@ export default function PatientsDashboard({
     console.log("Export patients:", patientIds);
   };
 
-  const handleCreateRenewal = (renewalData: Record<string, unknown>) => {
+  const handleCreateRenewal = async (
+    renewalData: Omit<RenewalData, "id" | "created_at" | "updated_at">
+  ) => {
     // TODO: Implement create renewal functionality
     console.log("Create renewal:", renewalData);
   };
 
-  const handleUpdateRenewal = (
+  const handleUpdateRenewal = async (
     renewalId: string,
-    updates: Record<string, unknown>
+    updates: Partial<RenewalData>
   ) => {
     // TODO: Implement update renewal functionality
     console.log("Update renewal:", renewalId, updates);
   };
 
-  const handleSendReminders = (patientIds: string[]) => {
+  const handleSendReminders = async (renewalIds: string[]) => {
     // TODO: Implement send reminders functionality
-    console.log("Send reminders to patients:", patientIds);
+    console.log("Send reminders to renewals:", renewalIds);
   };
 
-  const handleDeleteRenewal = (renewalId: string) => {
+  const handleDeleteRenewal = async (renewalId: string) => {
     // TODO: Implement delete renewal functionality
     console.log("Delete renewal:", renewalId);
   };

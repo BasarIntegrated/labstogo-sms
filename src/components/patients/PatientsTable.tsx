@@ -340,20 +340,6 @@ export default function PatientsTable({
                 {/* Additional info columns */}
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort("date_of_birth")}
-                    className="flex items-center space-x-1 hover:text-gray-700"
-                  >
-                    <span>DOB</span>
-                    {sortConfig.key === "date_of_birth" &&
-                      (sortConfig.direction === "asc" ? (
-                        <ChevronUp className="w-3 h-3" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3" />
-                      ))}
-                  </button>
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
                     onClick={() => handleSort("job_type")}
                     className="flex items-center space-x-1 hover:text-gray-700"
                   >
@@ -450,13 +436,6 @@ export default function PatientsTable({
                           "-"
                         );
                       })()}
-                    </td>
-
-                    {/* DOB */}
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                      {patient.date_of_birth
-                        ? formatDate(patient.date_of_birth)
-                        : "-"}
                     </td>
 
                     {/* Job Type */}

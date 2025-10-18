@@ -105,8 +105,8 @@ export default function TestSMS() {
             className="mt-1"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Use variables like{" "}
-            {(`{first_name}`, `{license_type}`, `{license_number}`)}
+            Use variables like <code>{`{first_name}`}</code>,{" "}
+            <code>{`{license_type}`}</code>, <code>{`{license_number}`}</code>
           </p>
         </div>
 

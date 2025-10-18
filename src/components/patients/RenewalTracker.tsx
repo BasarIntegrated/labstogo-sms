@@ -43,11 +43,17 @@ export default function RenewalTracker({
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     patient_id: "",
-    exam_type: "",
+    license_type: "",
+    license_number: "",
+    current_expiry_date: "",
+    renewal_deadline: "",
+    renewal_status: "pending" as
+      | "pending"
+      | "submitted"
+      | "approved"
+      | "rejected"
+      | "expired",
     exam_date: "",
-    renewal_date: "",
-    status: "pending" as "pending" | "completed" | "overdue",
-    notifications_sent: 0,
   });
 
   const handleOpenModal = (renewal?: RenewalData) => {
@@ -56,22 +62,24 @@ export default function RenewalTracker({
       setIsEditing(true);
       setFormData({
         patient_id: renewal.patient_id,
-        exam_type: renewal.exam_type,
-        exam_date: renewal.exam_date,
-        renewal_date: renewal.renewal_date,
-        status: renewal.status,
-        notifications_sent: renewal.notifications_sent,
+        license_type: renewal.license_type,
+        license_number: renewal.license_number,
+        current_expiry_date: renewal.current_expiry_date,
+        renewal_deadline: renewal.renewal_deadline,
+        renewal_status: renewal.renewal_status,
+        exam_date: renewal.exam_date || "",
       });
     } else {
       setSelectedRenewal(null);
       setIsEditing(false);
       setFormData({
         patient_id: "",
-        exam_type: "",
+        license_type: "",
+        license_number: "",
+        current_expiry_date: "",
+        renewal_deadline: "",
+        renewal_status: "pending",
         exam_date: "",
-        renewal_date: "",
-        status: "pending",
-        notifications_sent: 0,
       });
     }
     setShowModal(true);
@@ -83,11 +91,12 @@ export default function RenewalTracker({
     setIsEditing(false);
     setFormData({
       patient_id: "",
-      exam_type: "",
+      license_type: "",
+      license_number: "",
+      current_expiry_date: "",
+      renewal_deadline: "",
+      renewal_status: "pending",
       exam_date: "",
-      renewal_date: "",
-      status: "pending",
-      notifications_sent: 0,
     });
   };
 
@@ -268,33 +277,34 @@ export default function RenewalTracker({
                       Patient #{renewal.patient_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {renewal.exam_type}
+                      -
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(renewal.exam_date)}
+                      {renewal.exam_date ? formatDate(renewal.exam_date) : "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span
                         className={
-                          renewal.status === "overdue" ? "text-red-600" : ""
+                          renewal.renewal_status === "expired"
+                            ? "text-red-600"
+                            : ""
                         }
                       >
-                        {formatDate(renewal.renewal_date)}
+                        {formatDate(renewal.renewal_deadline)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                          renewal.status
+                          renewal.renewal_status
                         )}`}
                       >
-                        {renewal.status}
+                        {renewal.renewal_status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center">
-                        <Bell className="w-4 h-4 mr-1" />
-                        {renewal.notifications_sent}
+                        <Bell className="w-4 h-4 mr-1" />0
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -358,16 +368,51 @@ export default function RenewalTracker({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Exam Type
+                    License Type
                   </label>
                   <input
                     type="text"
-                    value={formData.exam_type}
+                    value={formData.license_type}
                     onChange={(e) =>
-                      setFormData({ ...formData, exam_type: e.target.value })
+                      setFormData({ ...formData, license_type: e.target.value })
                     }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., Medical License, Nursing License"
+                    placeholder="e.g., Medical, Nursing, Pharmacy"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    License Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.license_number}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        license_number: e.target.value,
+                      })
+                    }
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter license number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Current Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.current_expiry_date}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        current_expiry_date: e.target.value,
+                      })
+                    }
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
@@ -387,13 +432,16 @@ export default function RenewalTracker({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Renewal Date
+                    Renewal Deadline
                   </label>
                   <input
                     type="date"
-                    value={formData.renewal_date}
+                    value={formData.renewal_deadline}
                     onChange={(e) =>
-                      setFormData({ ...formData, renewal_date: e.target.value })
+                      setFormData({
+                        ...formData,
+                        renewal_deadline: e.target.value,
+                      })
                     }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -404,21 +452,25 @@ export default function RenewalTracker({
                     Status
                   </label>
                   <select
-                    value={formData.status}
+                    value={formData.renewal_status}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        status: e.target.value as
+                        renewal_status: e.target.value as
                           | "pending"
-                          | "completed"
-                          | "overdue",
+                          | "submitted"
+                          | "approved"
+                          | "rejected"
+                          | "expired",
                       })
                     }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
-                    <option value="overdue">Overdue</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="expired">Expired</option>
                   </select>
                 </div>
               </div>

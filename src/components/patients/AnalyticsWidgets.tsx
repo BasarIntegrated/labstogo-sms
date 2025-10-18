@@ -29,16 +29,16 @@ export default function AnalyticsWidgets({
   const analytics = {
     totalPatients: patients.length,
     activePatients: patients.filter((p) => p.status === "active").length,
-    renewalDue: patients.filter((p) => p.status === "renewal_due").length,
-    examPending: patients.filter((p) => p.status === "exam_pending").length,
+    renewalDue: 0, // This would need to be calculated based on renewal_date field
+    examPending: 0, // This would need to be calculated based on exam_date field
 
     // Status distribution
     statusDistribution: {
       active: patients.filter((p) => p.status === "active").length,
       inactive: patients.filter((p) => p.status === "inactive").length,
-      renewal_due: patients.filter((p) => p.status === "renewal_due").length,
-      exam_pending: patients.filter((p) => p.status === "exam_pending").length,
+      pending: patients.filter((p) => p.status === "pending").length,
       unsubscribed: patients.filter((p) => p.status === "unsubscribed").length,
+      bounced: patients.filter((p) => p.status === "bounced").length,
     },
 
     // License type distribution

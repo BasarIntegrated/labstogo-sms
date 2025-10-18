@@ -53,7 +53,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <span className="font-medium">Last updated:</span>{" "}
             <span className="text-gray-700 dark:text-gray-300">
-              {formatLastUpdated(lastUpdated)}
+              {formatLastUpdated(lastUpdated ?? null)}
             </span>
           </div>
 

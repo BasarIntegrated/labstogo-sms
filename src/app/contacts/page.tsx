@@ -70,6 +70,7 @@ export default function ContactsPage() {
     isLoading,
     isFetching,
     error: queryError,
+    refetch: refetchContacts,
   } = useQuery({
     queryKey: [
       "contacts",
@@ -743,8 +744,12 @@ export default function ContactsPage() {
                   try {
                     console.log("Import completed:", result);
                     setShowUploadModal(false);
-                    // TODO: Refresh the contacts list using React Query
-                    // window.location.reload(); // Removed to prevent potential issues
+                    // Refresh the contacts list to show new data
+                    if (refetchContacts) {
+                      refetchContacts();
+                    } else {
+                      console.warn("refetchContacts is not available yet");
+                    }
                   } catch (error) {
                     console.error("Error in onImportComplete:", error);
                   }
@@ -761,6 +766,18 @@ export default function ContactsPage() {
                     setShowUploadModal(false);
                   } catch (error) {
                     console.error("Error in onComplete:", error);
+                  }
+                }}
+                onRefetch={() => {
+                  try {
+                    console.log("Refetching contacts data...");
+                    if (refetchContacts) {
+                      refetchContacts();
+                    } else {
+                      console.warn("refetchContacts is not available yet");
+                    }
+                  } catch (error) {
+                    console.error("Error in onRefetch:", error);
                   }
                 }}
               />

@@ -462,10 +462,13 @@ export default function RenewalCampaignBuilder({
                 <Label htmlFor="frequency">Reminder Frequency</Label>
                 <Select
                   value={campaign.reminder_frequency}
-                  onValueChange={(value: any) =>
+                  onChange={(e) =>
                     setCampaign((prev) => ({
                       ...prev,
-                      reminder_frequency: value,
+                      reminder_frequency: e.target.value as
+                        | "daily"
+                        | "weekly"
+                        | "monthly",
                     }))
                   }
                 >

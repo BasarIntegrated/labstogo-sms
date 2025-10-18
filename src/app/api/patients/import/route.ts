@@ -1,24 +1,22 @@
 import {
   completeImportProgress,
   failImportProgress,
-  updateImportProgress,
 } from "@/lib/importProgress";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Patient } from "@/types/database";
 import { parse } from "csv-parse/sync";
 import { NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 
 /**
  * Contact Import API Endpoint
  *
- * Handles CSV and Excel file uploads, data validation, duplicate detection,
+ * Handles CSV file uploads, data validation, duplicate detection,
  * and bulk contact import with progress tracking.
  */
 
 /**
  * Convert various date formats to ISO date string
- * Handles Excel serial dates, ISO dates, and other common formats
+ * Handles ISO dates and other common formats
  */
 function convertToDateString(value: any): string | null {
   if (!value) return null;
@@ -28,11 +26,6 @@ function convertToDateString(value: any): string | null {
   // Already in ISO format (YYYY-MM-DD)
   if (/^\d{4}-\d{2}-\d{2}$/.test(stringValue)) {
     return stringValue;
-  }
-
-  // Excel serial date (5-digit number)
-  if (isExcelSerialDate(value)) {
-    return convertExcelSerialDate(value);
   }
 
   // Try parsing as a regular date
@@ -46,52 +39,6 @@ function convertToDateString(value: any): string | null {
   }
 
   return null; // Could not convert
-}
-
-/**
- * Convert Excel serial date to ISO date string
- * Excel stores dates as serial numbers (days since 1900-01-01)
- */
-function convertExcelSerialDate(serialDate: any): string | null {
-  if (!serialDate) return null;
-
-  const numValue = Number(serialDate);
-  if (isNaN(numValue) || numValue < 1 || numValue > 100000) {
-    return null; // Not a valid Excel serial date
-  }
-
-  // Excel serial date calculation
-  // Excel counts from 1900-01-01 as serial number 1
-  const excelEpoch = new Date(1900, 0, 1);
-  const millisecondsPerDay = 24 * 60 * 60 * 1000;
-
-  // Adjust for Excel's leap year bug (day 60 doesn't exist in 1900)
-  const adjustedSerial = numValue > 60 ? numValue - 1 : numValue;
-
-  const date = new Date(
-    excelEpoch.getTime() + (adjustedSerial - 1) * millisecondsPerDay
-  );
-
-  // Check if the date is reasonable (between 1900 and 2100)
-  if (date.getFullYear() < 1900 || date.getFullYear() > 2100) {
-    return null;
-  }
-
-  return date.toISOString().split("T")[0]; // Return YYYY-MM-DD format
-}
-
-/**
- * Check if a value looks like an Excel serial date
- */
-function isExcelSerialDate(value: any): boolean {
-  if (!value) return false;
-  const numValue = Number(value);
-  return (
-    !isNaN(numValue) &&
-    numValue >= 1 &&
-    numValue <= 100000 &&
-    Number.isInteger(numValue)
-  );
 }
 
 /**
@@ -189,21 +136,6 @@ function mapFieldName(fieldName: string): string {
     }
   }
 
-  // Handle common Excel header variations
-  const excelFieldMap: Record<string, string> = {
-    phone: "phone_number",
-    first: "first_name",
-    last: "last_name",
-    dob: "date_of_birth",
-    zip: "zip_code",
-    "job type": "job_type",
-    "last reminder": "last_reminder",
-  };
-
-  if (excelFieldMap[lowerFieldName]) {
-    return excelFieldMap[lowerFieldName];
-  }
-
   return fieldName;
 }
 
@@ -270,9 +202,9 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     const fileExtension = file.name.toLowerCase().split(".").pop();
-    if (!["csv", "xlsx", "xls"].includes(fileExtension || "")) {
+    if (fileExtension !== "csv") {
       return NextResponse.json(
-        { success: false, error: "Only CSV and Excel files are supported" },
+        { success: false, error: "Only CSV files are supported" },
         { status: 400 }
       );
     }
@@ -287,35 +219,6 @@ export async function POST(request: NextRequest) {
         skip_empty_lines: true,
         trim: true,
       });
-    } else if (["xlsx", "xls"].includes(fileExtension || "")) {
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
-
-      // Get the first worksheet
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-
-      // Convert to JSON with header row
-      records = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1,
-        defval: "",
-      });
-
-      // Convert to objects with headers and field mapping
-      if (records.length > 0) {
-        const headers = records[0] as string[];
-        records = records.slice(1).map((row: any[]) => {
-          const obj: any = {};
-          headers.forEach((header, index) => {
-            const normalizedHeader =
-              header?.toLowerCase().trim() || `column_${index}`;
-            // Map common field variations to our standard fields
-            const mappedField = mapFieldName(normalizedHeader);
-            obj[mappedField] = row[index] || "";
-          });
-          return obj;
-        });
-      }
     }
 
     if (records.length === 0) {
@@ -335,15 +238,10 @@ export async function POST(request: NextRequest) {
       ...options,
     };
 
-    // Initialize progress tracking
-    updateImportProgress(
-      sessionId,
-      0,
-      records.length,
-      `Starting import of ${records.length} contacts...`
-    );
+    // Log start of import
+    console.log(`🚀 Starting import of ${records.length} contacts...`);
 
-    // Process the import with progress tracking
+    // Process the import synchronously with progress updates
     const result = await processContactImport(
       records,
       importOptions,
@@ -353,19 +251,22 @@ export async function POST(request: NextRequest) {
     // Complete the progress tracking
     completeImportProgress(sessionId, result);
 
-    return NextResponse.json({
+    const response = {
       success: true,
-      data: result,
+      message: "Import completed successfully",
       sessionId,
+      data: result,
       progress: {
-        status: "completed",
-        message: `Import completed: ${result.imported} patients imported, ${result.errors.length} errors`,
         current: result.totalRows,
         total: result.totalRows,
         progress: 100,
+        message: `Import completed: ${result.imported} patients imported, ${result.errors.length} errors`,
+        status: "completed",
+        result: result,
       },
-      timestamp: new Date().toISOString(),
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Patient import error:", error);
 
@@ -602,13 +503,12 @@ async function processContactImport(
       consecutiveBlankRows = 0; // Reset counter when we find a non-blank row
     }
 
-    // Update progress tracking
-    updateImportProgress(
-      sessionId,
-      rowNumber,
-      processedRecords.length,
-      `Processing ${rowNumber} of ${processedRecords.length} contacts...`
-    );
+    // Log progress (no need to update session since we're synchronous now)
+    if (rowNumber % 10 === 0 || rowNumber === processedRecords.length) {
+      console.log(
+        `📊 Processing ${rowNumber} of ${processedRecords.length} contacts...`
+      );
+    }
 
     // Log progress every 10 rows or for first few rows
     if (
@@ -847,23 +747,6 @@ function safeStringTrim(value: any): string | null {
   // Handle Date objects
   if (value instanceof Date) {
     return value.toISOString().split("T")[0]; // Return YYYY-MM-DD format
-  }
-
-  // Handle Excel serial numbers (dates stored as numbers)
-  if (typeof value === "number" && value > 25569) {
-    // Excel epoch starts at 1900-01-01
-    try {
-      // Excel serial number to JavaScript Date
-      // Excel counts days since 1900-01-01, but has a bug where it treats 1900 as a leap year
-      const excelEpoch = new Date(1900, 0, 1); // January 1, 1900
-      const jsDate = new Date(
-        excelEpoch.getTime() + (value - 2) * 24 * 60 * 60 * 1000
-      );
-      return jsDate.toISOString().split("T")[0];
-    } catch (error) {
-      console.warn("Failed to convert Excel serial number to date:", value);
-      return null;
-    }
   }
 
   // Convert to string and trim
