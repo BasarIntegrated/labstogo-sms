@@ -328,12 +328,20 @@ export async function POST(request: NextRequest) {
     // Set default options
     const importOptions: ImportOptions = {
       skipDuplicates: true,
-      updateExisting: false,
+      updateExisting: true,
       validatePhoneNumbers: true,
       validateEmails: true,
       batchSize: 100,
       ...options,
     };
+
+    // Initialize progress tracking
+    updateImportProgress(
+      sessionId,
+      0,
+      records.length,
+      `Starting import of ${records.length} contacts...`
+    );
 
     // Process the import with progress tracking
     const result = await processContactImport(
@@ -352,9 +360,9 @@ export async function POST(request: NextRequest) {
       progress: {
         status: "completed",
         message: `Import completed: ${result.imported} patients imported, ${result.errors.length} errors`,
-        processed: result.totalRows,
+        current: result.totalRows,
         total: result.totalRows,
-        percentage: 100,
+        progress: 100,
       },
       timestamp: new Date().toISOString(),
     });
@@ -379,9 +387,9 @@ export async function POST(request: NextRequest) {
         progress: {
           status: "failed",
           message: "Import failed due to an error",
-          processed: 0,
+          current: 0,
           total: 0,
-          percentage: 0,
+          progress: 0,
         },
       },
       { status: 500 }
@@ -512,14 +520,6 @@ async function processContactImport(
   // Process each record with detailed logging and progress tracking
   console.log(`🚀 Starting to process ${processedRecords.length} records...`);
 
-  // Initialize progress tracking
-  updateImportProgress(
-    sessionId,
-    0,
-    processedRecords.length,
-    "Starting import..."
-  );
-
   // Smart pre-analysis: Check if file is mostly empty
   console.log(`🔍 Pre-analyzing file structure...`);
   const sampleSize = Math.min(50, processedRecords.length); // Check first 50 rows
@@ -607,7 +607,7 @@ async function processContactImport(
       sessionId,
       rowNumber,
       processedRecords.length,
-      `Importing ${rowNumber} of ${processedRecords.length} patients...`
+      `Processing ${rowNumber} of ${processedRecords.length} contacts...`
     );
 
     // Log progress every 10 rows or for first few rows

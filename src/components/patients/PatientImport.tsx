@@ -15,6 +15,8 @@ interface ImportProgress {
   stage: "idle" | "uploading" | "processing" | "completed" | "error";
   progress: number;
   message: string;
+  current?: number;
+  total?: number;
 }
 
 /**
@@ -31,7 +33,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importOptions, setImportOptions] = useState<ImportOptions>({
     skipDuplicates: true,
-    updateExisting: false,
+    updateExisting: true,
     validatePhoneNumbers: true,
     validateEmails: true,
     batchSize: 100,
@@ -40,6 +42,8 @@ export const PatientImport: React.FC<PatientImportProps> = ({
     stage: "idle",
     progress: 0,
     message: "Ready to import",
+    current: 0,
+    total: 0,
   });
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
@@ -93,7 +97,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
       setProgress({
         stage: "processing",
         progress: 10,
-        message: `Processing ${selectedFile.name}...`,
+        message: "Starting import...",
       });
 
       // Start polling for progress updates
@@ -113,6 +117,8 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                   : "processing",
               progress: progressData.progress || 0,
               message: progressData.message || "Processing...",
+              current: progressData.current || 0,
+              total: progressData.total || 0,
             });
 
             if (
@@ -125,7 +131,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
         } catch (error) {
           console.error("Error fetching progress:", error);
         }
-      }, 500); // Poll every 500ms
+      }, 1000); // Poll every 1 second
 
       const response = await fetch("/api/patients/import", {
         method: "POST",
@@ -138,10 +144,13 @@ export const PatientImport: React.FC<PatientImportProps> = ({
       if (result.success) {
         // Use progress information from API response
         const apiProgress = result.progress;
+
         setProgress({
           stage: "completed",
-          progress: apiProgress?.percentage || 100,
+          progress: apiProgress?.progress || 100,
           message: apiProgress?.message || "Import completed!",
+          current: apiProgress?.current || result.data?.totalRows || 0,
+          total: apiProgress?.total || result.data?.totalRows || 0,
         });
         setImportResult(result.data);
         onImportComplete?.(result.data);
@@ -149,13 +158,21 @@ export const PatientImport: React.FC<PatientImportProps> = ({
         const apiProgress = result.progress;
         setProgress({
           stage: "error",
-          progress: apiProgress?.percentage || 0,
+          progress: apiProgress?.progress || 0,
           message: apiProgress?.message || result.error,
+          current: apiProgress?.current || 0,
+          total: apiProgress?.total || 0,
         });
         setErrors([result.error]);
       }
     } catch (error) {
-      setProgress({ stage: "error", progress: 0, message: "Import failed" });
+      setProgress({
+        stage: "error",
+        progress: 0,
+        message: "Import failed",
+        current: 0,
+        total: 0,
+      });
       setErrors([error instanceof Error ? error.message : "Unknown error"]);
     }
   };
@@ -164,7 +181,13 @@ export const PatientImport: React.FC<PatientImportProps> = ({
     setSelectedFile(null);
     setImportResult(null);
     setErrors([]);
-    setProgress({ stage: "idle", progress: 0, message: "Ready to import" });
+    setProgress({
+      stage: "idle",
+      progress: 0,
+      message: "Ready to import",
+      current: 0,
+      total: 0,
+    });
   };
 
   const downloadSampleTemplate = (format: "csv" | "xlsx" = "csv") => {
@@ -287,7 +310,8 @@ export const PatientImport: React.FC<PatientImportProps> = ({
         </div>
       </div>
 
-      {/* Import Options */}
+      {/* Import Options - Hidden, using defaults */}
+      {/* 
       {selectedFile && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6">
@@ -389,6 +413,7 @@ export const PatientImport: React.FC<PatientImportProps> = ({
           </div>
         </div>
       )}
+      */}
 
       {/* Progress */}
       {progress.stage !== "idle" && (
@@ -396,7 +421,11 @@ export const PatientImport: React.FC<PatientImportProps> = ({
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {progress.message}
+                {progress.stage === "processing" &&
+                progress.current &&
+                progress.total
+                  ? `Processing ${progress.current} of ${progress.total} contacts...`
+                  : progress.message}
               </span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {progress.progress}%
@@ -414,6 +443,13 @@ export const PatientImport: React.FC<PatientImportProps> = ({
                 style={{ width: `${progress.progress}%` }}
               />
             </div>
+            {progress.stage === "processing" &&
+              progress.current &&
+              progress.total && (
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {progress.current} of {progress.total} contacts processed
+                </div>
+              )}
           </div>
         </div>
       )}
@@ -432,8 +468,93 @@ export const PatientImport: React.FC<PatientImportProps> = ({
         </div>
       )}
 
+      {/* Success Modal */}
+      {progress.stage === "completed" && importResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full">
+                <svg
+                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+                Import Successful!
+              </h3>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
+                Your contacts have been successfully imported.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                    {importResult.summary.newPatients}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    New Contacts
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    {importResult.summary.updatedPatients}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    Updated
+                  </div>
+                </div>
+              </div>
+
+              {(importResult.summary.skippedPatients > 0 ||
+                importResult.summary.errorCount > 0) && (
+                <div className="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <div className="text-sm text-yellow-800 dark:text-yellow-400">
+                    {importResult.summary.skippedPatients > 0 && (
+                      <div>
+                        {importResult.summary.skippedPatients} contacts skipped
+                      </div>
+                    )}
+                    {importResult.summary.errorCount > 0 && (
+                      <div>
+                        {importResult.summary.errorCount} errors encountered
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={resetImport}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                >
+                  Import Another File
+                </button>
+                <button
+                  onClick={onComplete}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Import Results */}
-      {importResult && (
+      {importResult && progress.stage !== "completed" && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -529,33 +650,29 @@ export const PatientImport: React.FC<PatientImportProps> = ({
       )}
 
       {/* Action Buttons */}
-      <div className="flex justify-center space-x-4">
-        {selectedFile && progress.stage === "idle" && (
-          <button
-            onClick={handleImport}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Start Import
-          </button>
-        )}
+      {progress.stage !== "completed" && (
+        <div className="flex justify-center space-x-4">
+          {selectedFile && progress.stage === "idle" && (
+            <button
+              onClick={handleImport}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Start Import
+            </button>
+          )}
 
-        {(progress.stage === "completed" || progress.stage === "error") && (
-          <div className="flex space-x-4">
-            <button
-              onClick={resetImport}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-            >
-              Import Another File
-            </button>
-            <button
-              onClick={onComplete}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
-            >
-              Complete
-            </button>
-          </div>
-        )}
-      </div>
+          {progress.stage === "error" && (
+            <div className="flex space-x-4">
+              <button
+                onClick={resetImport}
+                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,52 +1,31 @@
-# Utility Scripts
+# Scripts Directory
 
-This directory contains utility scripts for development, testing, and maintenance tasks.
+This directory has been cleared of all development and migration scripts.
 
-## 📋 Available Scripts
+## Previous Contents
 
-### 🗄️ Database & Setup
+The following scripts were previously located here but have been removed:
 
-- `setup-database.js` - Initialize database schema and tables
-- `supabase-setup.js` - Configure Supabase project settings
-- `setup-campaigns-table.sql` - SQL script for campaigns table setup
+- `check-patients.js` - Patient data validation script
+- `code-quality.js` - Code quality analysis script
+- `create-initial-campaign.js` - Campaign creation script
+- `seed-renewal-campaigns.js` - Renewal campaign seeding script
+- `setup-campaigns-table.sql` - Campaign table setup SQL
+- `setup-database.js` - Database setup script
+- `supabase-setup.js` - Supabase configuration script
+- `test-api-endpoints.js` - API endpoint testing script
+- `test-patient-creation.js` - Patient creation testing script
+- `test-supabase.js` - Supabase connection testing script
 
-### 🧪 Testing & Verification
+## Current Status
 
-- `test-api-endpoints.js` - Test all API endpoints
-- `test-patient-creation.js` - Test patient/contact creation
-- `test-supabase.js` - Test Supabase connection and queries
-- `check-patients.js` - Verify patient data integrity
+The scripts directory is now clean and ready for future development scripts if needed.
 
-### 🎯 Campaign Management
+## Database Status
 
-- `create-initial-campaign.js` - Create initial campaign templates
-- `seed-renewal-campaigns.js` - Seed renewal campaign data
+The database has been reset and is running with:
 
-### 🔍 Code Quality
-
-- `code-quality.js` - Run code quality checks and generate reports
-
-## 🚀 Usage
-
-Run scripts using Node.js:
-
-```bash
-# Test API endpoints
-node scripts/test-api-endpoints.js
-
-# Check patient data
-node scripts/check-patients.js
-
-# Create initial campaigns
-node scripts/create-initial-campaign.js
-
-# Run code quality checks
-node scripts/code-quality.js
-```
-
-## 📝 Notes
-
-- All scripts require a running Supabase instance
-- Ensure environment variables are properly configured
-- Some scripts may require database write permissions
-- Test scripts are safe to run in development environments
+- ✅ Fresh schema applied
+- ✅ All migrations up to date
+- ✅ Only essential seed data (admin user, default group, default template)
+- ✅ Custom seeding data cleared
