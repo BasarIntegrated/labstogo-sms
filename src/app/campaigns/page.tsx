@@ -1,0 +1,440 @@
+"use client";
+
+import CampaignComposer from "@/components/campaigns/CampaignComposer";
+import { Campaign } from "@/types/database";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  // Filter,
+  Edit,
+  Eye,
+  MessageSquare,
+  Pause,
+  // Trash2,
+  Play,
+  Plus,
+  Search,
+  Send,
+  Square,
+  Users,
+  XCircle,
+} from "lucide-react";
+import { useState } from "react";
+
+// No mock data - using real API calls
+
+export default function CampaignsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+
+  // Real API calls
+  const { data: campaigns = [], isLoading } = useQuery({
+    queryKey: ["campaigns", searchTerm, selectedStatus],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/campaigns");
+        if (!response.ok) {
+          throw new Error("Failed to fetch campaigns");
+        }
+        const data = await response.json();
+        return data.campaigns || [];
+      } catch (error) {
+        console.error("Error fetching campaigns:", error);
+        return [];
+      }
+    },
+  });
+
+  const filteredCampaigns = campaigns.filter((campaign: Campaign) => {
+    const matchesSearch =
+      !searchTerm ||
+      campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      campaign.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      selectedStatus === "all" || campaign.status === selectedStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "scheduled":
+        return "bg-blue-100 text-blue-800";
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "completed":
+        return "bg-purple-100 text-purple-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "draft":
+        return <Edit className="w-4 h-4" />;
+      case "scheduled":
+        return <Clock className="w-4 h-4" />;
+      case "active":
+        return <Play className="w-4 h-4" />;
+      case "completed":
+        return <CheckCircle className="w-4 h-4" />;
+      case "cancelled":
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return <MessageSquare className="w-4 h-4" />;
+    }
+  };
+
+  const handleEdit = (campaign: Campaign) => {
+    setEditingCampaign(campaign);
+    setShowCreateModal(true);
+  };
+
+  const handleSaveCampaign = (campaign: Campaign) => {
+    // Mock save - replace with actual API call
+    console.log("Saving campaign:", campaign);
+    setShowCreateModal(false);
+    setEditingCampaign(null);
+    // You could add a toast notification here
+  };
+
+  const handleCancelEdit = () => {
+    setShowCreateModal(false);
+    setEditingCampaign(null);
+  };
+
+  const handleStartCampaign = (campaignId: string) => {
+    // Mock start campaign - replace with actual API call
+    console.log("Starting campaign:", campaignId);
+    // You could add a toast notification here
+  };
+
+  const handlePauseCampaign = (campaignId: string) => {
+    // Mock pause campaign - replace with actual API call
+    console.log("Pausing campaign:", campaignId);
+    // You could add a toast notification here
+  };
+
+  const handleStopCampaign = (campaignId: string) => {
+    // Mock stop campaign - replace with actual API call
+    console.log("Stopping campaign:", campaignId);
+    // You could add a toast notification here
+  };
+
+  const getDeliveryRate = (campaign: Campaign) => {
+    if (!campaign.sent_count || campaign.sent_count === 0) return 0;
+    return Math.round(
+      ((campaign.delivered_count || 0) / campaign.sent_count) * 100
+    );
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Campaigns</h1>
+            <p className="mt-2 text-gray-600">
+              Create and manage your SMS and email campaigns
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Campaign
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-blue-100">
+              <MessageSquare className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">
+                Total Campaigns
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {campaigns.length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-green-100">
+              <Play className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">
+                Active Campaigns
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {
+                  campaigns.filter((c: Campaign) => c.status === "active")
+                    .length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-purple-100">
+              <Send className="h-6 w-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Messages Sent</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {campaigns.reduce(
+                  (total: number, c: Campaign) => total + (c.sent_count || 0),
+                  0
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-3 rounded-lg bg-orange-100">
+              <CheckCircle className="h-6 w-6 text-orange-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">
+                Avg Delivery Rate
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {campaigns.length > 0
+                  ? Math.round(
+                      campaigns.reduce(
+                        (total: number, c: Campaign) =>
+                          total + getDeliveryRate(c),
+                        0
+                      ) / campaigns.length
+                    )
+                  : 0}
+                %
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="bg-white shadow rounded-lg mb-8">
+        <div className="px-4 py-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search campaigns..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Campaigns Table */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <div className="overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Campaign
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Recipients
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Sent
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Delivery Rate
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-4 text-center">
+                      <div className="animate-pulse">Loading campaigns...</div>
+                    </td>
+                  </tr>
+                ) : filteredCampaigns.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-4 text-center">
+                      <div className="text-gray-500">
+                        <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                        <p>No campaigns found</p>
+                        <p className="text-sm">
+                          Try adjusting your search or filters
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCampaigns.map((campaign: Campaign) => (
+                    <tr key={campaign.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {campaign.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {campaign.description}
+                          </div>
+                          {campaign.scheduled_at && (
+                            <div className="text-xs text-gray-400 flex items-center mt-1">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Scheduled:{" "}
+                              {new Date(campaign.scheduled_at).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                            campaign.status
+                          )}`}
+                        >
+                          {getStatusIcon(campaign.status)}
+                          <span className="ml-1">{campaign.status}</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 text-gray-400 mr-1" />
+                          {campaign.total_patients || 0}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {campaign.sent_count || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {getDeliveryRate(campaign)}%
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {campaign.created_at
+                          ? new Date(campaign.created_at).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          {campaign.status === "draft" && (
+                            <button
+                              onClick={() =>
+                                campaign.id && handleStartCampaign(campaign.id)
+                              }
+                              className="text-green-600 hover:text-green-900"
+                              title="Start Campaign"
+                            >
+                              <Play className="w-4 h-4" />
+                            </button>
+                          )}
+                          {campaign.status === "active" && (
+                            <button
+                              onClick={() =>
+                                campaign.id && handlePauseCampaign(campaign.id)
+                              }
+                              className="text-yellow-600 hover:text-yellow-900"
+                              title="Pause Campaign"
+                            >
+                              <Pause className="w-4 h-4" />
+                            </button>
+                          )}
+                          {(campaign.status === "active" ||
+                            campaign.status === "scheduled") && (
+                            <button
+                              onClick={() =>
+                                campaign.id && handleStopCampaign(campaign.id)
+                              }
+                              className="text-red-600 hover:text-red-900"
+                              title="Stop Campaign"
+                            >
+                              <Square className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleEdit(campaign)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Edit Campaign"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="text-gray-600 hover:text-gray-900"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Campaign Composer Modal */}
+      <CampaignComposer
+        campaign={editingCampaign || undefined}
+        onSave={handleSaveCampaign}
+        onCancel={handleCancelEdit}
+        isOpen={showCreateModal}
+      />
+    </div>
+  );
+}

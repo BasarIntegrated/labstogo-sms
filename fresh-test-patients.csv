@@ -1,0 +1,4 @@
+phone_number,first_name,last_name,email,company
++1-555-0301,Alice,Johnson,alice.j@example.com,TechCorp
++1-555-0302,Bob,Smith,bob.smith@example.com,HealthPlus
++1-555-0303,Carol,Williams,carol.w@example.com,MedTech
