@@ -11,6 +11,7 @@ import { config } from "dotenv";
 import express from "express";
 import cors from "cors";
 import { smsWorker, campaignWorker, connection } from "./lib/queue";
+import campaignRoutes from "./api/campaigns";
 
 // Load environment variables
 config();
@@ -21,6 +22,9 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// API routes
+app.use(campaignRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

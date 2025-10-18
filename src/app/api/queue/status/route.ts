@@ -1,61 +1,28 @@
-import { campaignQueue, smsQueue } from "@/lib/queue";
+// API route to get queue status (connects to Render backend)
 import { NextRequest, NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL || "https://sms-backend-xxxx.onrender.com";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get queue statistics
-    const [smsStats, campaignStats] = await Promise.all([
-      smsQueue.getJobCounts(),
-      campaignQueue.getJobCounts(),
-    ]);
-
-    // Get recent jobs
-    const [recentSmsJobs, recentCampaignJobs] = await Promise.all([
-      smsQueue.getJobs(["completed", "failed", "active"], 0, 10),
-      campaignQueue.getJobs(["completed", "failed", "active"], 0, 10),
-    ]);
-
-    return NextResponse.json({
-      queues: {
-        sms: {
-          ...smsStats,
-          recentJobs: await Promise.all(
-            recentSmsJobs.map(async (job) => ({
-              id: job.id,
-              name: job.name,
-              status: await job.getState(),
-              progress: job.progress,
-              data: job.data,
-              createdAt: job.timestamp,
-              processedOn: job.processedOn,
-              finishedOn: job.finishedOn,
-              failedReason: job.failedReason,
-            }))
-          ),
-        },
-        campaign: {
-          ...campaignStats,
-          recentJobs: await Promise.all(
-            recentCampaignJobs.map(async (job) => ({
-              id: job.id,
-              name: job.name,
-              status: await job.getState(),
-              progress: job.progress,
-              data: job.data,
-              createdAt: job.timestamp,
-              processedOn: job.processedOn,
-              finishedOn: job.finishedOn,
-              failedReason: job.failedReason,
-            }))
-          ),
-        },
+    // Forward request to Render backend
+    const response = await fetch(`${BACKEND_URL}/queue/status`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
       },
-      timestamp: new Date().toISOString(),
     });
+
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching queue status:", error);
+    console.error("Queue status error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch queue status" },
+      { error: "Failed to get queue status" },
       { status: 500 }
     );
   }

@@ -6,8 +6,8 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Server-side client for admin operations - use anon key for local dev
-export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey, {
+// Server-side client for admin operations - use service key for admin operations
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
