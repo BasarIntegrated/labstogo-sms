@@ -42,7 +42,6 @@ class TwilioService {
 
     try {
       // Dynamic import to avoid issues if Twilio is not installed
-      // @ts-expect-error - Twilio module resolution issue
       const twilio = await import("twilio");
       this.twilioClient = twilio.default(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
       this.config = {

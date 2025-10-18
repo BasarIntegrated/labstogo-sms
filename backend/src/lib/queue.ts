@@ -1,6 +1,6 @@
-import { Campaign, Patient } from "@/types/database";
 import { Job, Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
+import { Campaign, Patient } from "./database";
 import { formatPhoneNumber, personalizeMessage, sendSMS } from "./sms";
 import { supabaseAdmin } from "./supabase";
 
