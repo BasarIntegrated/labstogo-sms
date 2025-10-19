@@ -4,13 +4,17 @@ import { Campaign, Patient } from "./database";
 import { formatPhoneNumber, personalizeMessage, sendSMS } from "./sms";
 import { supabaseAdmin } from "./supabase";
 
-// Redis connection
-const connection = new IORedis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
-  password: process.env.REDIS_PASSWORD,
-  maxRetriesPerRequest: null, // Required for BullMQ blocking operations
-});
+// Redis connection - Use Railway Redis URL if available
+const connection = process.env.REDIS_URL 
+  ? new IORedis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: null, // Required for BullMQ blocking operations
+    })
+  : new IORedis({
+      host: process.env.REDISHOST || process.env.REDIS_HOST || "localhost",
+      port: parseInt(process.env.REDISPORT || process.env.REDIS_PORT || "6379"),
+      password: process.env.REDISPASSWORD || process.env.REDIS_PASSWORD,
+      maxRetriesPerRequest: null, // Required for BullMQ blocking operations
+    });
 
 // Job types
 export interface SMSJobData {
