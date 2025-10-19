@@ -27,6 +27,7 @@
     "prompt": "node scripts/prompt-transformer.js"
   },
   "dependencies": {
+    "@auth/supabase-adapter": "^1.11.0",
     "@bull-board/api": "^6.13.0",
     "@bull-board/ui": "^6.13.0",
     "@hookform/resolvers": "^5.2.2",
@@ -42,10 +43,12 @@
     "@supabase/supabase-js": "^2.75.0",
     "@tanstack/react-query": "^5.90.1",
     "@tanstack/react-query-devtools": "^5.90.1",
+    "@types/bcryptjs": "^2.4.6",
     "@types/ioredis": "^4.28.10",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.2",
     "bullmq": "^5.58.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -58,6 +61,7 @@
     "lucide-react": "^0.544.0",
     "multer": "^2.0.2",
     "next": "15.5.3",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-day-picker": "^9.11.0",
     "react-dom": "19.1.0",

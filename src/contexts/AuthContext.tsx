@@ -1,7 +1,8 @@
 "use client";
 
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 
 interface User {
   id: string;
@@ -21,64 +22,37 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    // Check for existing session on mount
-    const checkAuth = () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error("Error parsing stored user data:", error);
-        localStorage.removeItem("user");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const isLoading = status === "loading";
+  const isAuthenticated = !!session?.user;
 
-    checkAuth();
-  }, []);
+  // Convert NextAuth session to our User format
+  const user: User | null = session?.user ? {
+    id: session.user.id || "",
+    email: session.user.email || "",
+    name: session.user.name || "",
+    role: (session.user.role as "admin" | "standard") || "standard",
+  } : null;
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      setIsLoading(true);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      // Mock authentication - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // For demo purposes, accept any email/password combination
-      if (email && password) {
-        const userData: User = {
-          id: "1",
-          email: email,
-          name: email.split("@")[0],
-          role: email.includes("admin") ? "admin" : "standard",
-        };
-
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        return true;
-      }
-
-      return false;
+      return result?.ok || false;
     } catch (error) {
       console.error("Login error:", error);
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    router.push("/login");
+    signOut({ callbackUrl: "/login" });
   };
 
   const value: AuthContextType = {
@@ -86,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
