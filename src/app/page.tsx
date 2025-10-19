@@ -1,17 +1,13 @@
 "use client";
 
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { useQueueStatus } from "@/hooks/useQueueStatus";
-import { QueueStatus } from "@/types/queue";
 import {
   CheckCircle,
-  Clock,
   MessageSquare,
   Plus,
   Send,
   Upload,
   Users,
-  Zap,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -23,15 +19,6 @@ export default function Dashboard() {
     isLoading: dashboardLoading,
     error: dashboardError,
   } = useDashboardData();
-
-  const {
-    data: queueStatus,
-    // isLoading: queueLoading,
-    error: queueError,
-  } = useQueueStatus();
-
-  // Type assertion for queue status
-  const typedQueueStatus = queueStatus as QueueStatus | undefined;
 
   if (dashboardLoading) {
     return (
@@ -240,135 +227,6 @@ export default function Dashboard() {
               Jobs & Workers Status
             </h3>
           </div>
-
-          {queueError ? (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <div className="text-sm text-red-700">
-                Error loading queue status: {queueError.message}
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* SMS Queue Status */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center mb-3">
-                  <Zap className="w-5 h-5 text-blue-600 mr-2" />
-                  <h4 className="text-sm font-medium text-gray-900">
-                    SMS Queue
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {typedQueueStatus?.smsQueue?.waiting ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Waiting</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {typedQueueStatus?.smsQueue?.active ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Active</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-600">
-                      {typedQueueStatus?.smsQueue?.completed ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">
-                      {typedQueueStatus?.smsQueue?.failed ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Failed</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Campaign Queue Status */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center mb-3">
-                  <Clock className="w-5 h-5 text-purple-600 mr-2" />
-                  <h4 className="text-sm font-medium text-gray-900">
-                    Campaign Queue
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {typedQueueStatus?.campaignQueue?.waiting ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Waiting</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {typedQueueStatus?.campaignQueue?.active ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Active</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-600">
-                      {typedQueueStatus?.campaignQueue?.completed ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">
-                      {typedQueueStatus?.campaignQueue?.failed ?? 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Failed</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Recent Jobs */}
-          {typedQueueStatus?.recentJobs &&
-            typedQueueStatus.recentJobs.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">
-                  Recent Jobs
-                </h4>
-                <div className="space-y-2">
-                  {typedQueueStatus.recentJobs
-                    .slice(0, 5)
-                    .map((job, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className={`w-2 h-2 rounded-full mr-3 ${
-                              job.state === "completed"
-                                ? "bg-green-500"
-                                : job.state === "failed"
-                                ? "bg-red-500"
-                                : job.state === "active"
-                                ? "bg-blue-500"
-                                : "bg-yellow-500"
-                            }`}
-                          />
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {job.name || "Unknown Job"}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {job.queue} • {job.state}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {job.timestamp
-                            ? new Date(job.timestamp).toLocaleTimeString()
-                            : "N/A"}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
         </div>
       </div>
 

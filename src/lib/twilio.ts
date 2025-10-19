@@ -41,16 +41,16 @@ class TwilioService {
     }
 
     try {
+      // Twilio service removed - SMS handled by backend
       // Dynamic import to avoid issues if Twilio is not installed
-      // @ts-expect-error - Twilio module resolution issue
-      const twilio = await import("twilio");
-      this.twilioClient = twilio.default(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+      // const twilio = await import("twilio");
+      // this.twilioClient = twilio.default(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
       this.config = {
         accountSid: TWILIO_ACCOUNT_SID,
         authToken: TWILIO_AUTH_TOKEN,
         phoneNumber: TWILIO_PHONE_NUMBER,
       };
-      console.log("Twilio service initialized successfully");
+      console.log("Twilio service disabled - SMS handled by backend");
     } catch (error) {
       console.error("Failed to initialize Twilio service:", error);
     }

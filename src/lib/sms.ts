@@ -1,5 +1,5 @@
 // @ts-ignore
-import twilio from "twilio";
+// import twilio from "twilio"; // Removed - Twilio is handled by backend
 
 // Check if we're in sandbox mode
 const isSandboxMode = process.env.TWILIO_SANDBOX_MODE === "true";
@@ -14,24 +14,13 @@ const hasValidCredentials =
   !process.env.TWILIO_ACCOUNT_SID.includes("your_") &&
   !process.env.TWILIO_AUTH_TOKEN.includes("your_");
 
-let client: any = null;
+const client: any = null;
 
-if (hasValidCredentials) {
-  try {
-    client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-
-    if (isSandboxMode || isDevelopment) {
-      console.log(
-        "🧪 Twilio Sandbox Mode: SMS will be sent to verified numbers only"
-      );
-    }
-  } catch (error) {
-    console.warn("Failed to initialize Twilio client:", error);
-    client = null;
-  }
+// Twilio client initialization removed - SMS handled by backend
+if (isSandboxMode || isDevelopment) {
+  console.log(
+    "🧪 Twilio Sandbox Mode: SMS will be sent to verified numbers only"
+  );
 }
 
 export interface SMSResult {
