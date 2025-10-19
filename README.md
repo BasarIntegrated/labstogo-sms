@@ -92,3 +92,4 @@ This is a **hybrid deployment** with:
 - **Database**: Supabase
 - **Queue**: BullMQ with Redis
 - **SMS**: Twilio integration
+# NextAuth.js Authentication System
