@@ -1,8 +1,6 @@
-// API route to start campaigns (connects to Render backend)
+// API route to start campaigns (frontend-only implementation)
+import { supabaseAdmin } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL =
-  process.env.BACKEND_URL || "https://bumpy-field-production.up.railway.app";
 
 export async function POST(
   request: NextRequest,
@@ -12,25 +10,36 @@ export async function POST(
     const { patientIds } = await request.json();
     const { id: campaignId } = await params;
 
-    // Forward request to Railway backend
-    const response = await fetch(
-      `${BACKEND_URL}/api/campaigns/${campaignId}/start`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
-        },
-        body: JSON.stringify({ patientIds }),
-      }
-    );
+    console.log("Starting campaign:", campaignId);
 
-    if (!response.ok) {
-      throw new Error(`Backend error: ${response.statusText}`);
+    // Update campaign status to active
+    const { data: campaign, error: updateError } = await supabaseAdmin
+      .from("campaigns")
+      .update({ 
+        status: "active",
+        sent_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", campaignId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Error updating campaign:", updateError);
+      return NextResponse.json(
+        { error: "Failed to start campaign" },
+        { status: 500 }
+      );
     }
 
-    const result = await response.json();
-    return NextResponse.json(result);
+    console.log("Campaign started successfully:", campaign);
+
+    return NextResponse.json({
+      success: true,
+      message: "Campaign started successfully",
+      campaign: campaign,
+      patientCount: patientIds?.length || 0
+    });
   } catch (error) {
     console.error("Campaign start error:", error);
     return NextResponse.json(

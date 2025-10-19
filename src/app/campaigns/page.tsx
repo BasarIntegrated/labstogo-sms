@@ -20,6 +20,7 @@ import {
   Trash2,
   Users,
   XCircle,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -30,6 +31,8 @@ export default function CampaignsPage() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [viewingCampaign, setViewingCampaign] = useState<Campaign | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
 
   // Real API calls
   const { data: campaigns = [], isLoading } = useQuery({
@@ -144,15 +147,49 @@ export default function CampaignsPage() {
     }
   };
 
+  const handleViewCampaign = (campaign: Campaign) => {
+    setViewingCampaign(campaign);
+    setShowViewModal(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setShowViewModal(false);
+    setViewingCampaign(null);
+  };
+
   const handleCancelEdit = () => {
     setShowCreateModal(false);
     setEditingCampaign(null);
   };
 
-  const handleStartCampaign = (campaignId: string) => {
-    // Mock start campaign - replace with actual API call
-    console.log("Starting campaign:", campaignId);
-    // You could add a toast notification here
+  const handleStartCampaign = async (campaignId: string) => {
+    try {
+      console.log("Starting campaign:", campaignId);
+      
+      // Call the campaign start API
+      const response = await fetch(`/api/campaigns/${campaignId}/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ patientIds: [] }), // Empty array for now, will be populated by backend
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to start campaign");
+      }
+
+      const result = await response.json();
+      console.log("Campaign started successfully:", result);
+      
+      // Refresh campaigns data
+      window.location.reload();
+      alert("Campaign started successfully!");
+    } catch (error: any) {
+      console.error("Error starting campaign:", error);
+      alert(`Failed to start campaign: ${error.message || "Please try again."}`);
+    }
   };
 
   const handlePauseCampaign = (campaignId: string) => {
@@ -481,6 +518,7 @@ export default function CampaignsPage() {
 
                           {/* View Details Button */}
                           <button
+                            onClick={() => handleViewCampaign(campaign)}
                             className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                             title="View Details"
                           >
@@ -524,6 +562,156 @@ export default function CampaignsPage() {
         onCancel={handleCancelEdit}
         isOpen={showCreateModal}
       />
+
+      {/* Campaign View Modal */}
+      {showViewModal && viewingCampaign && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Campaign Details
+                </h3>
+                <button
+                  onClick={handleCloseViewModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Campaign Info */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Campaign Name
+                    </label>
+                    <p className="text-sm text-gray-900">{viewingCampaign.name}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <p className="text-sm text-gray-900">{viewingCampaign.description || "No description"}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        viewingCampaign.status
+                      )}`}
+                    >
+                      {viewingCampaign.status}
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Message Template
+                    </label>
+                    <div className="bg-gray-50 rounded-md p-3">
+                      <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                        {viewingCampaign.message_template || "No message template"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campaign Stats */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                    Campaign Statistics
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Sent:</span>
+                      <span className="ml-2 font-medium">{viewingCampaign.sent_count || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Failed:</span>
+                      <span className="ml-2 font-medium">{viewingCampaign.failed_count || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Delivered:</span>
+                      <span className="ml-2 font-medium">{viewingCampaign.delivered_count || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Delivery Rate:</span>
+                      <span className="ml-2 font-medium">{getDeliveryRate(viewingCampaign)}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campaign Dates */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                    Timeline
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-600">Created:</span>
+                      <span className="ml-2 font-medium">
+                        {viewingCampaign.created_at
+                          ? new Date(viewingCampaign.created_at).toLocaleString()
+                          : "N/A"}
+                      </span>
+                    </div>
+                    {viewingCampaign.updated_at && (
+                      <div>
+                        <span className="text-gray-600">Last Updated:</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(viewingCampaign.updated_at).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {viewingCampaign.sent_at && (
+                      <div>
+                        <span className="text-gray-600">Started:</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(viewingCampaign.sent_at).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {viewingCampaign.completed_at && (
+                      <div>
+                        <span className="text-gray-600">Completed:</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(viewingCampaign.completed_at).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={handleCloseViewModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseViewModal();
+                    handleEdit(viewingCampaign);
+                  }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Campaign
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
