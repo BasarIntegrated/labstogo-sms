@@ -19,17 +19,28 @@ export async function POST(
 
     console.log(`Assigning ${contactIds.length} contacts to campaign ${campaignId}`);
 
+    // Debug: Check what campaigns exist
+    const { data: allCampaigns, error: debugError } = await supabaseAdmin
+      .from("campaigns")
+      .select("id, name")
+      .limit(10);
+    
+    console.log("Available campaigns:", allCampaigns);
+    console.log("Looking for campaign ID:", campaignId);
+
     // Get current campaign data
     const { data: campaign, error: campaignError } = await supabaseAdmin
       .from("campaigns")
-      .select("recipient_contacts, total_recipients")
+      .select("recipient_contacts")
       .eq("id", campaignId)
       .single();
 
     if (campaignError || !campaign) {
       console.error("Campaign not found:", campaignError);
+      console.error("Campaign ID provided:", campaignId);
+      console.error("Available campaign IDs:", allCampaigns?.map(c => c.id));
       return NextResponse.json(
-        { error: "Campaign not found" },
+        { error: "Campaign not found", debug: { providedId: campaignId, availableIds: allCampaigns?.map(c => c.id) } },
         { status: 404 }
       );
     }
@@ -50,7 +61,6 @@ export async function POST(
       .from("campaigns")
       .update({
         recipient_contacts: newRecipientContacts,
-        total_recipients: newRecipientContacts.length,
         updated_at: new Date().toISOString(),
       })
       .eq("id", campaignId)
