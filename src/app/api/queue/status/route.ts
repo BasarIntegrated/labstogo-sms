@@ -1,7 +1,8 @@
 // API route to get queue status (connects to Render backend)
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "https://sms-backend-xxxx.onrender.com";
+const BACKEND_URL =
+  process.env.BACKEND_URL || "https://bumpy-field-production.up.railway.app";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(`${BACKEND_URL}/queue/status`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
+        Authorization: `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
       },
     });
 
