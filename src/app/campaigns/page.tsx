@@ -12,12 +12,12 @@ import {
   Eye,
   MessageSquare,
   Pause,
-  // Trash2,
   Play,
   Plus,
   Search,
   Send,
   Square,
+  Trash2,
   Users,
   XCircle,
 } from "lucide-react";
@@ -100,12 +100,48 @@ export default function CampaignsPage() {
     setShowCreateModal(true);
   };
 
-  const handleSaveCampaign = (campaign: Campaign) => {
-    // Mock save - replace with actual API call
-    console.log("Saving campaign:", campaign);
-    setShowCreateModal(false);
-    setEditingCampaign(null);
-    // You could add a toast notification here
+  const handleSaveCampaign = async (campaign: Campaign) => {
+    try {
+      console.log("Saving campaign:", campaign);
+
+      const url = "/api/campaigns";
+      const method = campaign.id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(campaign),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || `Failed to ${campaign.id ? "update" : "create"} campaign`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Campaign saved successfully:", result);
+
+      // Close modal and refresh campaigns list
+      setShowCreateModal(false);
+      setEditingCampaign(null);
+
+      // Refresh campaigns data
+      window.location.reload(); // Simple refresh for now
+
+      // You could add a toast notification here
+      alert(`Campaign ${campaign.id ? "updated" : "created"} successfully!`);
+    } catch (error: any) {
+      console.error("Error saving campaign:", error);
+      alert(
+        `Failed to ${
+          campaign.id ? "update" : "create"
+        } campaign: ${error.message || "Please try again."}`
+      );
+    }
   };
 
   const handleCancelEdit = () => {
@@ -129,6 +165,26 @@ export default function CampaignsPage() {
     // Mock stop campaign - replace with actual API call
     console.log("Stopping campaign:", campaignId);
     // You could add a toast notification here
+  };
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    try {
+      const response = await fetch(`/api/campaigns?id=${campaignId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete campaign");
+      }
+
+      console.log("Campaign deleted successfully");
+      // Refresh campaigns data
+      window.location.reload();
+      alert("Campaign deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      alert("Failed to delete campaign. Please try again.");
+    }
   };
 
   const getDeliveryRate = (campaign: Campaign) => {
@@ -329,7 +385,7 @@ export default function CampaignsPage() {
                           <div className="text-sm font-medium text-gray-900">
                             {campaign.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 max-w-xs truncate" title={campaign.description}>
                             {campaign.description}
                           </div>
                           {campaign.scheduled_at && (
@@ -354,7 +410,7 @@ export default function CampaignsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
                           <Users className="w-4 h-4 text-gray-400 mr-1" />
-                          {campaign.total_patients || 0}
+                          {campaign.total_recipients || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -369,53 +425,86 @@ export default function CampaignsPage() {
                           : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end space-x-1">
+                          {/* Start Campaign Button */}
                           {campaign.status === "draft" && (
                             <button
                               onClick={() =>
                                 campaign.id && handleStartCampaign(campaign.id)
                               }
-                              className="text-green-600 hover:text-green-900"
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 transition-colors"
                               title="Start Campaign"
                             >
-                              <Play className="w-4 h-4" />
+                              <Play className="w-3 h-3 mr-1" />
+                              Start
                             </button>
                           )}
+
+                          {/* Pause Campaign Button */}
                           {campaign.status === "active" && (
                             <button
                               onClick={() =>
                                 campaign.id && handlePauseCampaign(campaign.id)
                               }
-                              className="text-yellow-600 hover:text-yellow-900"
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded hover:bg-yellow-200 transition-colors"
                               title="Pause Campaign"
                             >
-                              <Pause className="w-4 h-4" />
+                              <Pause className="w-3 h-3 mr-1" />
+                              Pause
                             </button>
                           )}
+
+                          {/* Stop Campaign Button */}
                           {(campaign.status === "active" ||
                             campaign.status === "scheduled") && (
                             <button
                               onClick={() =>
                                 campaign.id && handleStopCampaign(campaign.id)
                               }
-                              className="text-red-600 hover:text-red-900"
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded hover:bg-red-200 transition-colors"
                               title="Stop Campaign"
                             >
-                              <Square className="w-4 h-4" />
+                              <Square className="w-3 h-3 mr-1" />
+                              Stop
                             </button>
                           )}
+
+                          {/* Edit Campaign Button */}
                           <button
                             onClick={() => handleEdit(campaign)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200 transition-colors"
                             title="Edit Campaign"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3 mr-1" />
+                            Edit
                           </button>
+
+                          {/* View Details Button */}
                           <button
-                            className="text-gray-600 hover:text-gray-900"
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                             title="View Details"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3 h-3 mr-1" />
+                            View
+                          </button>
+
+                          {/* Delete Campaign Button */}
+                          <button
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded hover:bg-red-200 transition-colors"
+                            title="Delete Campaign"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  `Are you sure you want to delete "${campaign.name}"?`
+                                )
+                              ) {
+                                campaign.id &&
+                                  handleDeleteCampaign(campaign.id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
                           </button>
                         </div>
                       </td>

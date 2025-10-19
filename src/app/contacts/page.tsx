@@ -122,7 +122,7 @@ export default function ContactsPage() {
   });
 
   // Get available campaigns for assignment
-  const { data: campaigns = [] } = useQuery({
+  const { data: campaigns = [], isLoading: campaignsLoading } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       try {
@@ -131,12 +131,13 @@ export default function ContactsPage() {
           throw new Error("Failed to fetch campaigns");
         }
         const data = await response.json();
-        return data.campaigns || [];
+        return Array.isArray(data.campaigns) ? data.campaigns : [];
       } catch (error) {
         console.error("Error fetching campaigns:", error);
         return [];
       }
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Update previous contacts when new data arrives
@@ -426,14 +427,23 @@ export default function ContactsPage() {
 
       {/* Filters and Search */}
       <div className="bg-white shadow rounded-lg mb-8">
-        <div className="py-5 sm:py-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">
+            Filters & Search
+          </h3>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Contacts
+              </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search contacts..."
+                  placeholder="Search by name, email, phone, or company..."
                   value={searchTerm}
                   onChange={(e) =>
                     handleFilterChange(e.target.value, selectedStatus)
@@ -442,11 +452,16 @@ export default function ContactsPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-4">
+
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
               <select
                 value={selectedStatus}
                 onChange={(e) => handleFilterChange(searchTerm, e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -454,10 +469,32 @@ export default function ContactsPage() {
                 <option value="unsubscribed">Unsubscribed</option>
                 <option value="bounced">Bounced</option>
               </select>
-              <div className="flex gap-2 items-center">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Expires:
-                </label>
+            </div>
+
+            {/* Campaign Assignment */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bulk Actions
+              </label>
+              <button
+                onClick={() => setShowCampaignModal(true)}
+                disabled={campaignsLoading || campaigns.length === 0}
+                className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                {campaignsLoading ? "Loading..." : "Assign to Campaign"}
+              </button>
+            </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              License Expiration Date Range
+            </label>
+            <div className="flex gap-4 items-center">
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">From</label>
                 <input
                   type="date"
                   value={expiresFrom}
@@ -469,10 +506,11 @@ export default function ContactsPage() {
                       expiresTo
                     )
                   }
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  placeholder="From"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
-                <span className="text-gray-500">to</span>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">To</label>
                 <input
                   type="date"
                   value={expiresTo}
@@ -484,17 +522,19 @@ export default function ContactsPage() {
                       e.target.value
                     )
                   }
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  placeholder="To"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
-              <button
-                onClick={() => setShowCampaignModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Assign All to Campaign
-              </button>
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() =>
+                    handleFilterChange(searchTerm, selectedStatus, "", "")
+                  }
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Clear Dates
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -823,34 +863,41 @@ export default function ContactsPage() {
                 </p>
 
                 <div className="space-y-2">
-                  {campaigns.map((campaign: any) => (
-                    <label
-                      key={campaign.id}
-                      className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                    >
-                      <input
-                        type="radio"
-                        name="campaign"
-                        value={campaign.id}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
-                          {campaign.name}
+                  {campaignsLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-500">
+                        Loading campaigns...
+                      </p>
+                    </div>
+                  ) : campaigns.length > 0 ? (
+                    campaigns.map((campaign: any) => (
+                      <label
+                        key={campaign.id}
+                        className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="campaign"
+                          value={campaign.id}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        />
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {campaign.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {campaign.description || "No description"}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {campaign.description || "No description"}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
+                      </label>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No campaigns available. Create a campaign first.
+                    </p>
+                  )}
                 </div>
-
-                {campaigns.length === 0 && (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No campaigns available. Create a campaign first.
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-end space-x-3">
@@ -869,10 +916,10 @@ export default function ContactsPage() {
                     );
                     setShowCampaignModal(false);
                   }}
-                  disabled={campaigns.length === 0}
+                  disabled={campaignsLoading || campaigns.length === 0}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Assign All Contacts
+                  {campaignsLoading ? "Loading..." : "Assign All Contacts"}
                 </button>
               </div>
             </div>
