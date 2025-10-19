@@ -55,6 +55,8 @@ export default function ContactsPage() {
   const [expiresFrom, setExpiresFrom] = useState("");
   const [expiresTo, setExpiresTo] = useState("");
   const [showCampaignModal, setShowCampaignModal] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
+  const [isAssigning, setIsAssigning] = useState(false);
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(0);
@@ -265,6 +267,55 @@ export default function ContactsPage() {
       setCurrentPage(0); // Reset to first page when sorting
     } catch (error) {
       console.error("Error in handleSort:", error);
+    }
+  };
+
+  const handleAssignToCampaign = async () => {
+    if (!selectedCampaignId) {
+      alert("Please select a campaign first");
+      return;
+    }
+
+    setIsAssigning(true);
+    
+    try {
+      // Get all filtered contact IDs
+      const contactIds = filteredContacts.map((contact: any) => contact.id);
+      
+      console.log(`Assigning ${contactIds.length} contacts to campaign ${selectedCampaignId}`);
+
+      // Call API to assign contacts to campaign
+      const response = await fetch(`/api/campaigns/${selectedCampaignId}/assign-contacts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          contactIds,
+          replaceExisting: false // Add to existing recipients
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to assign contacts to campaign");
+      }
+
+      const result = await response.json();
+      console.log("Campaign assignment successful:", result);
+
+      // Show success message
+      alert(`Successfully assigned ${contactIds.length} contacts to campaign!`);
+      
+      // Close modal and reset state
+      setShowCampaignModal(false);
+      setSelectedCampaignId("");
+      
+    } catch (error: any) {
+      console.error("Error assigning contacts to campaign:", error);
+      alert(`Failed to assign contacts: ${error.message || "Please try again."}`);
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -836,7 +887,10 @@ export default function ContactsPage() {
                   Assign to Campaign
                 </h3>
                 <button
-                  onClick={() => setShowCampaignModal(false)}
+                  onClick={() => {
+                    setShowCampaignModal(false);
+                    setSelectedCampaignId("");
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <span className="sr-only">Close</span>
@@ -880,6 +934,8 @@ export default function ContactsPage() {
                           type="radio"
                           name="campaign"
                           value={campaign.id}
+                          checked={selectedCampaignId === campaign.id}
+                          onChange={(e) => setSelectedCampaignId(e.target.value)}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                         />
                         <div className="ml-3">
@@ -902,24 +958,20 @@ export default function ContactsPage() {
 
               <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => setShowCampaignModal(false)}
+                  onClick={() => {
+                    setShowCampaignModal(false);
+                    setSelectedCampaignId("");
+                  }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: Implement campaign assignment for all filtered contacts
-                    console.log(
-                      "Assigning all filtered contacts to campaign:",
-                      totalContacts
-                    );
-                    setShowCampaignModal(false);
-                  }}
-                  disabled={campaignsLoading || campaigns.length === 0}
+                  onClick={handleAssignToCampaign}
+                  disabled={campaignsLoading || campaigns.length === 0 || !selectedCampaignId || isAssigning}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {campaignsLoading ? "Loading..." : "Assign All Contacts"}
+                  {isAssigning ? "Assigning..." : campaignsLoading ? "Loading..." : "Assign All Contacts"}
                 </button>
               </div>
             </div>
