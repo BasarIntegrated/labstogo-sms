@@ -4,11 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 const BACKEND_URL =
   process.env.BACKEND_URL || "https://bumpy-field-production.up.railway.app";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { campaignId, patientIds } = await request.json();
+    const { patientIds } = await request.json();
+    const { id: campaignId } = await params;
 
-    // Forward request to Render backend
+    // Forward request to Railway backend
     const response = await fetch(
       `${BACKEND_URL}/api/campaigns/${campaignId}/start`,
       {

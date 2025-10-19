@@ -52,18 +52,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create campaign with new schema fields
-    const campaignData: Record<string, string | number> = {
+    // Create campaign with minimal required fields
+    const campaignData = {
       name,
-      description,
+      description: description || "",
       message_template,
-      status: "draft",
-      recipient_type: "all",
-      total_patients: 0,
-      sent_count: 0,
-      delivered_count: 0,
-      failed_count: 0,
+      created_by: "550e8400-e29b-41d4-a716-446655440000", // Different UUID format
     };
+
+    console.log("Creating campaign with data:", campaignData);
 
     // Skip optional fields that don't exist in current schema to avoid errors
     // These fields will be added when the database schema is updated
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Error creating campaign:", error);
       return NextResponse.json(
-        { error: "Failed to create campaign" },
+        { error: "Failed to create campaign", details: error.message },
         { status: 500 }
       );
     }

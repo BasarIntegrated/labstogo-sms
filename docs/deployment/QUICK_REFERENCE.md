@@ -3,16 +3,19 @@
 ## 🚀 **Quick Access URLs**
 
 ### **Production Applications**
+
 - **Frontend**: https://labstogo-sms.vercel.app
 - **Backend**: https://bumpy-field-production.up.railway.app
 - **Health Check**: https://bumpy-field-production.up.railway.app/health
 - **Queue Status**: https://labstogo-sms.vercel.app/api/queue/status
 
 ### **Repositories**
+
 - **Frontend**: https://github.com/BasarIntegrated/labstogo-sms
 - **Backend**: https://github.com/BasarIntegrated/labstogo-sms-backend
 
 ### **Platform Dashboards**
+
 - **Vercel**: https://vercel.com/dashboard
 - **Railway**: https://railway.app/dashboard
 - **Supabase**: https://supabase.com/dashboard
@@ -21,6 +24,7 @@
 ## 🔧 **Quick Commands**
 
 ### **Health Checks**
+
 ```bash
 # Backend health
 curl -s https://bumpy-field-production.up.railway.app/health | jq .
@@ -33,6 +37,7 @@ curl -s -I https://labstogo-sms.vercel.app
 ```
 
 ### **Deployment Commands**
+
 ```bash
 # Frontend deployment
 vercel --prod
@@ -46,6 +51,7 @@ railway variables
 ```
 
 ### **Development Commands**
+
 ```bash
 # Frontend development
 cd /Users/roelabasa/Projects/mml/labstogo-sms
@@ -59,6 +65,7 @@ npm run dev
 ## 📊 **System Status**
 
 ### **Current Status** ✅
+
 - **Frontend**: Live on Vercel
 - **Backend**: Live on Railway
 - **Database**: Connected to Supabase
@@ -67,6 +74,7 @@ npm run dev
 - **Workers**: SMS & Campaign workers running
 
 ### **Architecture Summary**
+
 ```
 Frontend (Vercel) ←→ Backend (Railway) ←→ Database (Supabase)
                            ↓
@@ -76,11 +84,13 @@ Frontend (Vercel) ←→ Backend (Railway) ←→ Database (Supabase)
 ## 🔑 **Key Configuration**
 
 ### **Environment Variables Count**
+
 - **Frontend**: 9 variables
 - **Backend**: 8 variables
 - **Total**: 17 environment variables
 
 ### **Services Status**
+
 - **Supabase**: ✅ Connected
 - **Twilio**: ✅ Sandbox mode
 - **Redis**: ✅ Queue storage
@@ -89,12 +99,14 @@ Frontend (Vercel) ←→ Backend (Railway) ←→ Database (Supabase)
 ## 📞 **Emergency Contacts**
 
 ### **Platform Support**
+
 - **Vercel**: https://vercel.com/support
 - **Railway**: https://railway.app/support
 - **Supabase**: https://supabase.com/support
 - **Twilio**: https://support.twilio.com
 
 ### **Status Pages**
+
 - **Vercel**: https://vercel.com/status
 - **Railway**: https://status.railway.app
 - **Supabase**: https://status.supabase.com

@@ -7,6 +7,7 @@
 ## 🏗️ **System Architecture**
 
 ### **High-Level Architecture**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend       │    │   Database      │
@@ -28,6 +29,7 @@
 ```
 
 ### **Deployment Architecture**
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRODUCTION ENVIRONMENT                   │
@@ -64,6 +66,7 @@
 ## 📦 **Repository Structure**
 
 ### **Frontend Repository** (`labstogo-sms`)
+
 ```
 /Users/roelabasa/Projects/mml/labstogo-sms/
 ├── src/
@@ -87,6 +90,7 @@
 ```
 
 ### **Backend Repository** (`labstogo-sms-backend`)
+
 ```
 /Users/roelabasa/Projects/mml/labstogo-sms-backend/
 ├── src/
@@ -105,6 +109,7 @@
 ## 🔧 **Environment Variables**
 
 ### **Frontend (Vercel)**
+
 ```bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://whanmvvrhztjrvpxgsok.supabase.co
@@ -123,6 +128,7 @@ TWILIO_PHONE_NUMBER=+14234559907
 ```
 
 ### **Backend (Railway)**
+
 ```bash
 # Server Configuration
 NODE_ENV=production
@@ -145,16 +151,17 @@ REDIS_URL=redis://redis.railway.internal:6379
 
 ## 🚀 **Deployment URLs**
 
-| Service | Platform | URL | Status |
-|---------|----------|-----|--------|
-| **Frontend** | Vercel | `https://labstogo-sms.vercel.app` | ✅ Live |
-| **Backend** | Railway | `https://bumpy-field-production.up.railway.app` | ✅ Live |
-| **Backend Health** | Railway | `https://bumpy-field-production.up.railway.app/health` | ✅ Live |
-| **Queue Status** | Frontend | `https://labstogo-sms.vercel.app/api/queue/status` | ✅ Live |
+| Service            | Platform | URL                                                    | Status  |
+| ------------------ | -------- | ------------------------------------------------------ | ------- |
+| **Frontend**       | Vercel   | `https://labstogo-sms.vercel.app`                      | ✅ Live |
+| **Backend**        | Railway  | `https://bumpy-field-production.up.railway.app`        | ✅ Live |
+| **Backend Health** | Railway  | `https://bumpy-field-production.up.railway.app/health` | ✅ Live |
+| **Queue Status**   | Frontend | `https://labstogo-sms.vercel.app/api/queue/status`     | ✅ Live |
 
 ## 🔄 **Data Flow Architecture**
 
 ### **SMS Campaign Flow**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   User Action   │    │   Frontend       │    │   Backend        │
@@ -172,6 +179,7 @@ REDIS_URL=redis://redis.railway.internal:6379
 ```
 
 ### **Queue Processing Flow**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Campaign      │    │   SMS Queue     │    │   SMS Worker    │
@@ -186,6 +194,7 @@ REDIS_URL=redis://redis.railway.internal:6379
 ## 🛠️ **Technology Stack**
 
 ### **Frontend Stack**
+
 - **Framework**: Next.js 15 (App Router)
 - **UI Library**: React 18
 - **Styling**: Tailwind CSS
@@ -194,6 +203,7 @@ REDIS_URL=redis://redis.railway.internal:6379
 - **Deployment**: Vercel
 
 ### **Backend Stack**
+
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Queue System**: BullMQ
@@ -202,6 +212,7 @@ REDIS_URL=redis://redis.railway.internal:6379
 - **Deployment**: Railway
 
 ### **External Services**
+
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **SMS Service**: Twilio
@@ -210,6 +221,7 @@ REDIS_URL=redis://redis.railway.internal:6379
 ## 📊 **API Endpoints**
 
 ### **Frontend API Routes** (Proxy to Backend)
+
 ```
 GET  /api/queue/status          # Queue status
 POST /api/campaigns/[id]/start  # Start campaign
@@ -219,6 +231,7 @@ GET  /api/dashboard             # Dashboard data
 ```
 
 ### **Backend API Routes**
+
 ```
 GET  /health                    # Health check
 GET  /queue/status              # Queue status
@@ -229,11 +242,13 @@ GET  /api/campaigns/:id/status  # Campaign status
 ## 🔒 **Security Configuration**
 
 ### **Authentication**
+
 - **Frontend**: Supabase Auth with JWT tokens
 - **Backend**: API key authentication (`BACKEND_API_KEY`)
 - **Database**: Row Level Security (RLS) enabled
 
 ### **CORS Configuration**
+
 - **Frontend**: Configured for Vercel domain
 - **Backend**: Configured for frontend domain
 - **API**: Secure headers and rate limiting
@@ -241,11 +256,13 @@ GET  /api/campaigns/:id/status  # Campaign status
 ## 📈 **Monitoring & Observability**
 
 ### **Health Checks**
+
 - **Backend**: `/health` endpoint with worker status
 - **Frontend**: Built-in Vercel monitoring
 - **Database**: Supabase dashboard monitoring
 
 ### **Queue Monitoring**
+
 - **BullMQ Dashboard**: Available via Railway
 - **Queue Status**: Real-time via API
 - **Worker Status**: Health check endpoint
@@ -253,6 +270,7 @@ GET  /api/campaigns/:id/status  # Campaign status
 ## 🚀 **Deployment Process**
 
 ### **Frontend Deployment**
+
 ```bash
 # 1. Set environment variables
 vercel env add NEXT_PUBLIC_SUPABASE_URL production
@@ -264,6 +282,7 @@ vercel --prod
 ```
 
 ### **Backend Deployment**
+
 ```bash
 # 1. Push to GitHub
 git push origin main
@@ -275,6 +294,7 @@ git push origin main
 ## 🔧 **Development Setup**
 
 ### **Frontend Development**
+
 ```bash
 cd /Users/roelabasa/Projects/mml/labstogo-sms
 npm install
@@ -283,6 +303,7 @@ npm run dev
 ```
 
 ### **Backend Development**
+
 ```bash
 cd /Users/roelabasa/Projects/mml/labstogo-sms-backend
 npm install
@@ -293,18 +314,21 @@ npm run dev
 ## 📝 **Best Practices Implemented**
 
 ### **Architecture**
+
 - ✅ **Separation of Concerns**: Frontend and backend in separate repositories
 - ✅ **Platform Optimization**: Each service optimized for its platform
 - ✅ **Scalability**: Independent scaling of frontend and backend
 - ✅ **Maintainability**: Clear boundaries and responsibilities
 
 ### **Security**
+
 - ✅ **Environment Variables**: Secure configuration management
 - ✅ **API Authentication**: Backend API key protection
 - ✅ **Database Security**: RLS and service role keys
 - ✅ **CORS Configuration**: Proper cross-origin setup
 
 ### **Performance**
+
 - ✅ **CDN**: Vercel's global edge network
 - ✅ **Caching**: Redis for queue operations
 - ✅ **Optimization**: Next.js production optimizations
@@ -313,12 +337,14 @@ npm run dev
 ## 🎯 **Next Steps**
 
 ### **Production Readiness**
+
 1. **Custom Domain**: Configure custom domain for Vercel
 2. **SSL Certificates**: Automatic HTTPS via Vercel/Railway
 3. **Monitoring**: Set up alerts and logging
 4. **Backup**: Database backup strategy
 
 ### **Scaling Considerations**
+
 1. **Redis Scaling**: Upgrade Railway Redis plan if needed
 2. **Worker Scaling**: Add more worker instances
 3. **Database Scaling**: Supabase scaling options

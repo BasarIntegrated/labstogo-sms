@@ -68,6 +68,7 @@ npm start
 ## 🚀 Deployment
 
 Deployed on Vercel:
+
 - **Frontend**: Next.js application
 - **Domain**: Custom domain support
 - **CDN**: Global edge network
@@ -76,7 +77,7 @@ Deployed on Vercel:
 ## 🔗 Related
 
 - **Backend**: [labstogo-sms-backend](https://github.com/BasarIntegrated/labstogo-sms-backend)
-- **Documentation**: 
+- **Documentation**:
   - [Hybrid Deployment Guide](docs/deployment/HYBRID_DEPLOYMENT_GUIDE.md)
   - [System Architecture](docs/deployment/SYSTEM_ARCHITECTURE.md)
   - [Deployment Checklist](docs/deployment/DEPLOYMENT_CHECKLIST.md)
@@ -85,6 +86,7 @@ Deployed on Vercel:
 ## 🏗️ Architecture
 
 This is a **hybrid deployment** with:
+
 - **Frontend**: Next.js on Vercel
 - **Backend**: Node.js/Express on Railway
 - **Database**: Supabase
