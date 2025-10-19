@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff, MessageSquare } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -18,27 +19,21 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Mock authentication - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      // For demo purposes, accept any email/password combination
-      if (email && password) {
-        // Store mock session
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: "1",
-            email: email,
-            name: email.split("@")[0],
-            role: email.includes("admin") ? "admin" : "standard",
-          })
-        );
-
+      if (result?.error) {
+        setError("Invalid email or password. Please try again.");
+      } else if (result?.ok) {
         router.push("/");
       } else {
-        setError("Please enter both email and password");
+        setError("Login failed. Please try again.");
       }
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
