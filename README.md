@@ -1,51 +1,88 @@
-# LabsToGo SMS - Message Blasting App
+# LabsToGo SMS Frontend
 
-A comprehensive SMS and email campaign management platform for medical laboratories, built with Next.js 15 and Supabase.
+Professional SMS campaign management frontend built with Next.js, React, and Tailwind CSS.
 
-## 🚀 Quick Start
+## 🚀 Features
+
+- **Patient Management**: Import and manage patient data
+- **Campaign Builder**: Create and manage SMS campaigns
+- **Dashboard Analytics**: Real-time campaign performance metrics
+- **Queue Monitoring**: Live queue status and worker monitoring
+- **Settings Management**: Configure SMS and system settings
+- **Responsive Design**: Mobile-first, modern UI
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15
+- **UI Library**: React 18
+- **Styling**: Tailwind CSS
+- **Database**: Supabase
+- **Authentication**: Supabase Auth
+- **State Management**: React Query
+- **Deployment**: Vercel
+
+## 📦 Installation
 
 ```bash
-# Install dependencies
 npm install
+```
 
-# Start Supabase
-npx supabase start
-npx supabase db reset
+## 🔧 Environment Variables
 
-# Configure environment
-cp .env.example .env.local
+Create `.env.local` and configure:
 
-# Start development server
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_BACKEND_URL=https://your-backend-url.railway.app
+BACKEND_API_KEY=your_backend_api_key
+```
+
+## 🚀 Development
+
+```bash
 npm run dev
 ```
 
-## 📚 Documentation
+## 🏗️ Build
 
-For detailed documentation, setup guides, and API references, see the [Documentation](docs/README.md) directory.
+```bash
+npm run build
+```
 
-## 🏗️ Tech Stack
+## 🚀 Production
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL), Next.js API Routes
-- **SMS**: Twilio Integration
-- **Queue**: BullMQ (optional)
+```bash
+npm start
+```
 
-## ✨ Features
+## 📱 Pages
 
-- 📱 **Contact Management** - Import and organize patient contacts
-- 📧 **Campaign Builder** - Create SMS and email campaigns
-- 📊 **Analytics Dashboard** - Track campaign performance
-- 🔧 **Template System** - Reusable message templates
-- ⚙️ **Settings Management** - Configurable application settings
+- `/` - Dashboard
+- `/patients` - Patient management
+- `/campaigns` - Campaign builder
+- `/contacts` - Contact management
+- `/settings` - System settings
+- `/templates` - Message templates
 
-## 🔧 Available Scripts
+## 🚀 Deployment
 
-- `npm run dev` - Development server
-- `npm run build` - Production build
-- `npm run start` - Production server
-- `npm run lint` - Code linting
-- `npm run test` - Run tests
+Deployed on Vercel:
+- **Frontend**: Next.js application
+- **Domain**: Custom domain support
+- **CDN**: Global edge network
+- **Analytics**: Built-in performance monitoring
 
-## 📄 License
+## 🔗 Related
 
-MIT License - see [LICENSE](LICENSE) for details.
+- **Backend**: [labstogo-sms-backend](https://github.com/BasarIntegrated/labstogo-sms-backend)
+- **Documentation**: See project documentation
+
+## 🏗️ Architecture
+
+This is a **hybrid deployment** with:
+- **Frontend**: Next.js on Vercel
+- **Backend**: Node.js/Express on Railway
+- **Database**: Supabase
+- **Queue**: BullMQ with Redis
+- **SMS**: Twilio integration
