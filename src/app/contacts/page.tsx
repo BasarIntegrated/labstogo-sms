@@ -283,7 +283,7 @@ export default function ContactsPage() {
       const params = new URLSearchParams();
       params.append("limit", "10000"); // Large limit to get all contacts
       params.append("page", "0"); // Start from first page
-      
+
       if (searchTerm) params.append("search", searchTerm);
       if (selectedStatus !== "all") params.append("status", selectedStatus);
       if (expiresFrom) params.append("expires_from", expiresFrom);
@@ -293,11 +293,11 @@ export default function ContactsPage() {
 
       console.log("Fetching all filtered contacts for assignment...");
       const allContactsResponse = await fetch(`/api/contacts?${params}`);
-      
+
       if (!allContactsResponse.ok) {
         throw new Error("Failed to fetch all contacts for assignment");
       }
-      
+
       const allContactsData = await allContactsResponse.json();
       const allFilteredContacts = allContactsData.contacts || [];
       const contactIds = allFilteredContacts.map((contact: any) => contact.id);
@@ -307,7 +307,10 @@ export default function ContactsPage() {
       );
       console.log("Selected campaign ID:", selectedCampaignId);
       console.log("Total filtered contacts:", allFilteredContacts.length);
-      console.log("Available campaigns:", campaigns.map((c: any) => ({ id: c.id, name: c.name })));
+      console.log(
+        "Available campaigns:",
+        campaigns.map((c: any) => ({ id: c.id, name: c.name }))
+      );
 
       // Call API to assign contacts to campaign
       const response = await fetch(

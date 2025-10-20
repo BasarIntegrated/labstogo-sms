@@ -1,31 +1,33 @@
 # Scripts Directory
 
-This directory has been cleared of all development and migration scripts.
+This directory contains essential utility scripts for the LabsToGo SMS application.
 
-## Previous Contents
+## Current Scripts
 
-The following scripts were previously located here but have been removed:
+- `clear-contacts.ts` - Utility script to clear all contacts from the database
 
-- `check-patients.js` - Patient data validation script
-- `code-quality.js` - Code quality analysis script
-- `create-initial-campaign.js` - Campaign creation script
-- `seed-renewal-campaigns.js` - Renewal campaign seeding script
-- `setup-campaigns-table.sql` - Campaign table setup SQL
-- `setup-database.js` - Database setup script
-- `supabase-setup.js` - Supabase configuration script
-- `test-api-endpoints.js` - API endpoint testing script
-- `test-patient-creation.js` - Patient creation testing script
-- `test-supabase.js` - Supabase connection testing script
+## Usage
 
-## Current Status
+To run a script:
 
-The scripts directory is now clean and ready for future development scripts if needed.
+```bash
+# Install dependencies first
+npm install
 
-## Database Status
+# Run a script
+npx tsx scripts/clear-contacts.ts
+```
 
-The database has been reset and is running with:
+## Environment Setup
 
-- ✅ Fresh schema applied
-- ✅ All migrations up to date
-- ✅ Only essential seed data (admin user, default group, default template)
-- ✅ Custom seeding data cleared
+Make sure you have a `.env.local` file with the required environment variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- Other required variables as specified in `env.example`
+
+## Notes
+
+- Scripts use TypeScript and require `tsx` for execution
+- All scripts connect to the Supabase database using the service role key
+- Use scripts responsibly as they can modify production data

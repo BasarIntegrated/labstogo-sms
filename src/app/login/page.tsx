@@ -125,9 +125,6 @@ export default function LoginPage() {
               <p className="text-xs">
                 <strong>Admin:</strong> admin@messageblasting.com / admin123
               </p>
-              <p className="text-xs">
-                <strong>User:</strong> user@messageblasting.com / user123
-              </p>
             </div>
           </div>
         </form>

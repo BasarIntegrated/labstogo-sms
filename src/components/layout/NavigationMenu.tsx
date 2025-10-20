@@ -3,7 +3,7 @@
 import { isNavItemActive } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { NavigationMenuProps } from "@/types/navigation";
-import { Home, Megaphone, Settings, Users } from "lucide-react";
+import { Activity, Home, Megaphone, Settings, Users } from "lucide-react";
 import Link from "next/link";
 
 const iconMap = {
@@ -11,6 +11,7 @@ const iconMap = {
   megaphone: Megaphone,
   users: Users,
   settings: Settings,
+  activity: Activity,
 };
 
 export function NavigationMenu({

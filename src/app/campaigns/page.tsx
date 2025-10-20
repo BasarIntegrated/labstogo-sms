@@ -1,6 +1,7 @@
 "use client";
 
 import CampaignComposer from "@/components/campaigns/CampaignComposer";
+import CampaignMonitoring from "@/components/campaigns/CampaignMonitoring";
 import { Campaign } from "@/types/database";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -19,8 +20,8 @@ import {
   Square,
   Trash2,
   Users,
-  XCircle,
   X,
+  XCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -33,6 +34,10 @@ export default function CampaignsPage() {
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [viewingCampaign, setViewingCampaign] = useState<Campaign | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [monitoringCampaign, setMonitoringCampaign] = useState<Campaign | null>(
+    null
+  );
+  const [showMonitoring, setShowMonitoring] = useState(false);
 
   // Real API calls
   const { data: campaigns = [], isLoading } = useQuery({
@@ -121,7 +126,8 @@ export default function CampaignsPage() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.error || `Failed to ${campaign.id ? "update" : "create"} campaign`
+          errorData.error ||
+            `Failed to ${campaign.id ? "update" : "create"} campaign`
         );
       }
 
@@ -140,9 +146,9 @@ export default function CampaignsPage() {
     } catch (error: any) {
       console.error("Error saving campaign:", error);
       alert(
-        `Failed to ${
-          campaign.id ? "update" : "create"
-        } campaign: ${error.message || "Please try again."}`
+        `Failed to ${campaign.id ? "update" : "create"} campaign: ${
+          error.message || "Please try again."
+        }`
       );
     }
   };
@@ -157,6 +163,16 @@ export default function CampaignsPage() {
     setViewingCampaign(null);
   };
 
+  const handleMonitorCampaign = (campaign: Campaign) => {
+    setMonitoringCampaign(campaign);
+    setShowMonitoring(true);
+  };
+
+  const handleCloseMonitoring = () => {
+    setShowMonitoring(false);
+    setMonitoringCampaign(null);
+  };
+
   const handleCancelEdit = () => {
     setShowCreateModal(false);
     setEditingCampaign(null);
@@ -165,7 +181,7 @@ export default function CampaignsPage() {
   const handleStartCampaign = async (campaignId: string) => {
     try {
       console.log("Starting campaign:", campaignId);
-      
+
       // Call the campaign start API
       const response = await fetch(`/api/campaigns/${campaignId}/start`, {
         method: "POST",
@@ -182,26 +198,120 @@ export default function CampaignsPage() {
 
       const result = await response.json();
       console.log("Campaign started successfully:", result);
-      
+
       // Refresh campaigns data
       window.location.reload();
       alert("Campaign started successfully!");
     } catch (error: any) {
       console.error("Error starting campaign:", error);
-      alert(`Failed to start campaign: ${error.message || "Please try again."}`);
+      alert(
+        `Failed to start campaign: ${error.message || "Please try again."}`
+      );
     }
   };
 
-  const handlePauseCampaign = (campaignId: string) => {
-    // Mock pause campaign - replace with actual API call
-    console.log("Pausing campaign:", campaignId);
-    // You could add a toast notification here
+  const handlePauseCampaign = async (campaignId: string) => {
+    try {
+      console.log("Pausing campaign:", campaignId);
+
+      // Update campaign status to paused
+      const response = await fetch(`/api/campaigns/${campaignId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "paused",
+          updated_at: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to pause campaign");
+      }
+
+      const result = await response.json();
+      console.log("Campaign paused successfully:", result);
+
+      // Refresh campaigns data
+      window.location.reload();
+      alert("Campaign paused successfully!");
+    } catch (error: any) {
+      console.error("Error pausing campaign:", error);
+      alert(
+        `Failed to pause campaign: ${error.message || "Please try again."}`
+      );
+    }
   };
 
-  const handleStopCampaign = (campaignId: string) => {
-    // Mock stop campaign - replace with actual API call
-    console.log("Stopping campaign:", campaignId);
-    // You could add a toast notification here
+  const handleStopCampaign = async (campaignId: string) => {
+    try {
+      console.log("Stopping campaign:", campaignId);
+
+      // Update campaign status to cancelled
+      const response = await fetch(`/api/campaigns/${campaignId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "cancelled",
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to stop campaign");
+      }
+
+      const result = await response.json();
+      console.log("Campaign stopped successfully:", result);
+
+      // Refresh campaigns data
+      window.location.reload();
+      alert("Campaign stopped successfully!");
+    } catch (error: any) {
+      console.error("Error stopping campaign:", error);
+      alert(`Failed to stop campaign: ${error.message || "Please try again."}`);
+    }
+  };
+
+  const handleResumeCampaign = async (campaignId: string) => {
+    try {
+      console.log("Resuming campaign:", campaignId);
+
+      // Update campaign status to active
+      const response = await fetch(`/api/campaigns/${campaignId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "active",
+          updated_at: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to resume campaign");
+      }
+
+      const result = await response.json();
+      console.log("Campaign resumed successfully:", result);
+
+      // Refresh campaigns data
+      window.location.reload();
+      alert("Campaign resumed successfully!");
+    } catch (error: any) {
+      console.error("Error resuming campaign:", error);
+      alert(
+        `Failed to resume campaign: ${error.message || "Please try again."}`
+      );
+    }
   };
 
   const handleDeleteCampaign = async (campaignId: string) => {
@@ -422,7 +532,10 @@ export default function CampaignsPage() {
                           <div className="text-sm font-medium text-gray-900">
                             {campaign.name}
                           </div>
-                          <div className="text-sm text-gray-500 max-w-xs truncate" title={campaign.description}>
+                          <div
+                            className="text-sm text-gray-500 max-w-xs truncate"
+                            title={campaign.description}
+                          >
                             {campaign.description}
                           </div>
                           {campaign.scheduled_at && (
@@ -491,9 +604,24 @@ export default function CampaignsPage() {
                             </button>
                           )}
 
+                          {/* Resume Campaign Button */}
+                          {campaign.status === "paused" && (
+                            <button
+                              onClick={() =>
+                                campaign.id && handleResumeCampaign(campaign.id)
+                              }
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 transition-colors"
+                              title="Resume Campaign"
+                            >
+                              <Play className="w-3 h-3 mr-1" />
+                              Resume
+                            </button>
+                          )}
+
                           {/* Stop Campaign Button */}
                           {(campaign.status === "active" ||
-                            campaign.status === "scheduled") && (
+                            campaign.status === "scheduled" ||
+                            campaign.status === "paused") && (
                             <button
                               onClick={() =>
                                 campaign.id && handleStopCampaign(campaign.id)
@@ -503,6 +631,19 @@ export default function CampaignsPage() {
                             >
                               <Square className="w-3 h-3 mr-1" />
                               Stop
+                            </button>
+                          )}
+
+                          {/* Monitor Campaign Button */}
+                          {(campaign.status === "active" ||
+                            campaign.status === "paused") && (
+                            <button
+                              onClick={() => handleMonitorCampaign(campaign)}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded hover:bg-purple-200 transition-colors"
+                              title="Monitor Campaign"
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              Monitor
                             </button>
                           )}
 
@@ -587,14 +728,18 @@ export default function CampaignsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Campaign Name
                     </label>
-                    <p className="text-sm text-gray-900">{viewingCampaign.name}</p>
+                    <p className="text-sm text-gray-900">
+                      {viewingCampaign.name}
+                    </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description
                     </label>
-                    <p className="text-sm text-gray-900">{viewingCampaign.description || "No description"}</p>
+                    <p className="text-sm text-gray-900">
+                      {viewingCampaign.description || "No description"}
+                    </p>
                   </div>
 
                   <div>
@@ -616,7 +761,8 @@ export default function CampaignsPage() {
                     </label>
                     <div className="bg-gray-50 rounded-md p-3">
                       <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                        {viewingCampaign.message_template || "No message template"}
+                        {viewingCampaign.message_template ||
+                          "No message template"}
                       </p>
                     </div>
                   </div>
@@ -630,19 +776,27 @@ export default function CampaignsPage() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-600">Sent:</span>
-                      <span className="ml-2 font-medium">{viewingCampaign.sent_count || 0}</span>
+                      <span className="ml-2 font-medium">
+                        {viewingCampaign.sent_count || 0}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Failed:</span>
-                      <span className="ml-2 font-medium">{viewingCampaign.failed_count || 0}</span>
+                      <span className="ml-2 font-medium">
+                        {viewingCampaign.failed_count || 0}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Delivered:</span>
-                      <span className="ml-2 font-medium">{viewingCampaign.delivered_count || 0}</span>
+                      <span className="ml-2 font-medium">
+                        {viewingCampaign.delivered_count || 0}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Delivery Rate:</span>
-                      <span className="ml-2 font-medium">{getDeliveryRate(viewingCampaign)}%</span>
+                      <span className="ml-2 font-medium">
+                        {getDeliveryRate(viewingCampaign)}%
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -657,7 +811,9 @@ export default function CampaignsPage() {
                       <span className="text-gray-600">Created:</span>
                       <span className="ml-2 font-medium">
                         {viewingCampaign.created_at
-                          ? new Date(viewingCampaign.created_at).toLocaleString()
+                          ? new Date(
+                              viewingCampaign.created_at
+                            ).toLocaleString()
                           : "N/A"}
                       </span>
                     </div>
@@ -665,7 +821,9 @@ export default function CampaignsPage() {
                       <div>
                         <span className="text-gray-600">Last Updated:</span>
                         <span className="ml-2 font-medium">
-                          {new Date(viewingCampaign.updated_at).toLocaleString()}
+                          {new Date(
+                            viewingCampaign.updated_at
+                          ).toLocaleString()}
                         </span>
                       </div>
                     )}
@@ -681,7 +839,9 @@ export default function CampaignsPage() {
                       <div>
                         <span className="text-gray-600">Completed:</span>
                         <span className="ml-2 font-medium">
-                          {new Date(viewingCampaign.completed_at).toLocaleString()}
+                          {new Date(
+                            viewingCampaign.completed_at
+                          ).toLocaleString()}
                         </span>
                       </div>
                     )}
@@ -708,6 +868,28 @@ export default function CampaignsPage() {
                   Edit Campaign
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Campaign Monitoring Modal */}
+      {showMonitoring && monitoringCampaign && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-4 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md bg-white max-h-[95vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Campaign Monitoring: {monitoringCampaign.name}
+                </h3>
+                <button
+                  onClick={handleCloseMonitoring}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <CampaignMonitoring campaignId={monitoringCampaign.id!} />
             </div>
           </div>
         </div>

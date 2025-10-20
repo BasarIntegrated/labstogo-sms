@@ -116,7 +116,7 @@ export const navigationItems: NavItem[] = [
   {
     id: "queues",
     label: "Queue Dashboard",
-    href: "/admin/queues",
+    href: "/queue",
     icon: "activity",
     requiresAuth: true,
   },
