@@ -179,15 +179,6 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
       metadata: { patientId: "pat_001", licenseType: "Medical" },
     },
     {
-      id: "3",
-      type: "renewal",
-      title: "Renewal Deadline Approaching",
-      description: "5 patients have renewals due within 7 days",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      status: "warning",
-      metadata: { count: 5, daysUntilRenewal: 7 },
-    },
-    {
       id: "4",
       type: "system",
       title: "SMS Delivery Rate Alert",

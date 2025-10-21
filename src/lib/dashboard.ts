@@ -236,22 +236,6 @@ export function processDashboardMetrics(metrics: DashboardMetrics): {
       value: formatPercentage(metrics.deliveryRate),
       trend: calculateTrend(metrics.deliveryRate, metrics.deliveryRate * 0.98),
     },
-    {
-      label: "Renewals Due",
-      value: formatNumber(metrics.renewalDueCount),
-      trend: calculateTrend(
-        metrics.renewalDueCount,
-        metrics.renewalDueCount * 1.1
-      ),
-    },
-    {
-      label: "Exams Pending",
-      value: formatNumber(metrics.examPendingCount),
-      trend: calculateTrend(
-        metrics.examPendingCount,
-        metrics.examPendingCount * 0.95
-      ),
-    },
   ].map((metric) => ({
     ...metric,
     change: {
@@ -449,8 +433,6 @@ export function generateDashboardExport(
   csvRows.push(`Active Campaigns,${metrics.activeCampaigns}`);
   csvRows.push(`Messages Sent Today,${metrics.messagesSentToday}`);
   csvRows.push(`Delivery Rate,${metrics.deliveryRate}%`);
-  csvRows.push(`Renewals Due,${metrics.renewalDueCount}`);
-  csvRows.push(`Exams Pending,${metrics.examPendingCount}`);
 
   // Campaign Performance CSV
   csvRows.push("\nDate,Campaigns,Messages Sent,Delivery Rate,Engagement Rate");

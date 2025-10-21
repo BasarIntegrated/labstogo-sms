@@ -136,7 +136,7 @@ export default function RenewalDashboard({
   renewalStats = mockStats,
 }: RenewalDashboardProps) {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "renewals" | "campaigns"
+    "overview" | "campaigns"
   >("overview");
 
   const getStatusColor = (status: string) => {
@@ -199,17 +199,6 @@ export default function RenewalDashboard({
             <p className="text-xs text-muted-foreground">
               +12% from last month
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Renewals Due</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{renewalDueCount}</div>
-            <p className="text-xs text-muted-foreground">Next 90 days</p>
           </CardContent>
         </Card>
 
@@ -358,7 +347,6 @@ export default function RenewalDashboard({
         <nav className="-mb-px flex space-x-8">
           {[
             { id: "overview", label: "Overview", icon: FileText },
-            { id: "renewals", label: "Upcoming Renewals", icon: Calendar },
             { id: "campaigns", label: "Recent Campaigns", icon: MessageSquare },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -451,10 +439,6 @@ export default function RenewalDashboard({
                 Create Renewal Campaign
               </Button>
               <Button className="w-full justify-start" variant="outline">
-                <Calendar className="w-4 h-4 mr-2" />
-                View All Renewals
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
                 <FileText className="w-4 h-4 mr-2" />
                 Generate Renewal Report
               </Button>
@@ -465,55 +449,6 @@ export default function RenewalDashboard({
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {activeTab === "renewals" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Renewals</CardTitle>
-            <CardDescription>
-              Contacts with renewals due in the next 90 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {upcomingRenewals.map((renewal) => (
-                <div
-                  key={renewal.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium">{renewal.contact_name}</div>
-                    <div className="text-sm text-gray-600">
-                      {renewal.license_type} License • {renewal.license_number}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Due:{" "}
-                      {new Date(renewal.renewal_deadline).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`text-sm font-medium ${getUrgencyColor(
-                        renewal.days_until_renewal
-                      )}`}
-                    >
-                      {renewal.days_until_renewal < 0
-                        ? `${Math.abs(renewal.days_until_renewal)} days overdue`
-                        : `${renewal.days_until_renewal} days`}
-                    </div>
-                    <Badge className={getStatusColor(renewal.renewal_status)}>
-                      {renewal.renewal_status}
-                    </Badge>
-                    <Button size="sm" variant="outline">
-                      Send Reminder
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {activeTab === "campaigns" && (

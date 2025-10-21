@@ -286,25 +286,11 @@ async function getDashboardMetrics(
     const deliveryRate =
       totalMessages > 0 ? (deliveredMessages / totalMessages) * 100 : 0;
 
-    // Get renewals due count
-    const { count: renewalDueCount } = await supabase
-      .from("patients")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "Unsubscribed");
-
-    // Get exams pending count
-    const { count: examPendingCount } = await supabase
-      .from("patients")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "Active");
-
     return {
       totalPatients: totalPatients || 0,
       activeCampaigns: activeCampaigns || 0,
       messagesSentToday: messagesSentToday || 0,
       deliveryRate: Math.round(deliveryRate * 100) / 100,
-      renewalDueCount: renewalDueCount || 0,
-      examPendingCount: examPendingCount || 0,
     };
   } catch (error) {
     console.error("Error fetching dashboard metrics:", error);
@@ -313,8 +299,6 @@ async function getDashboardMetrics(
       activeCampaigns: 0,
       messagesSentToday: 0,
       deliveryRate: 0,
-      renewalDueCount: 0,
-      examPendingCount: 0,
     };
   }
 }
