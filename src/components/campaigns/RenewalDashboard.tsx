@@ -25,7 +25,7 @@ import {
 import { useState } from "react";
 
 interface RenewalDashboardProps {
-  patientsCount: number;
+  contactsCount: number;
   renewalDueCount: number;
   campaignsActive: number;
   messagesSentToday: number;
@@ -36,7 +36,7 @@ interface RenewalDashboardProps {
 
 interface RenewalData {
   id: string;
-  patient_name: string;
+  contact_name: string;
   license_type: string;
   license_number: string;
   renewal_deadline: string;
@@ -49,7 +49,7 @@ interface Campaign {
   name: string;
   campaign_type: string;
   status: string;
-  total_patients: number;
+  total_contacts: number;
   sent_count: number;
   delivered_count: number;
   created_at: string;
@@ -67,7 +67,7 @@ interface RenewalStats {
 const mockRenewalData: RenewalData[] = [
   {
     id: "1",
-    patient_name: "Dr. John Smith",
+    contact_name: "Dr. John Smith",
     license_type: "Medical",
     license_number: "MD123456",
     renewal_deadline: "2024-02-15",
@@ -76,7 +76,7 @@ const mockRenewalData: RenewalData[] = [
   },
   {
     id: "2",
-    patient_name: "Jane Doe, RN",
+    contact_name: "Jane Doe, RN",
     license_type: "Nursing",
     license_number: "RN789012",
     renewal_deadline: "2024-02-20",
@@ -85,7 +85,7 @@ const mockRenewalData: RenewalData[] = [
   },
   {
     id: "3",
-    patient_name: "Dr. Mike Johnson",
+    contact_name: "Dr. Mike Johnson",
     license_type: "Medical",
     license_number: "MD456789",
     renewal_deadline: "2024-01-30",
@@ -100,7 +100,7 @@ const mockCampaigns: Campaign[] = [
     name: "Q1 Medical License Renewals",
     campaign_type: "renewal_reminder",
     status: "running",
-    total_patients: 150,
+    total_contacts: 150,
     sent_count: 120,
     delivered_count: 115,
     created_at: "2024-01-15",
@@ -110,7 +110,7 @@ const mockCampaigns: Campaign[] = [
     name: "Urgent License Expirations",
     campaign_type: "renewal_reminder",
     status: "completed",
-    total_patients: 25,
+    total_contacts: 25,
     sent_count: 25,
     delivered_count: 23,
     created_at: "2024-01-10",
@@ -127,7 +127,7 @@ const mockStats: RenewalStats = {
 };
 
 export default function RenewalDashboard({
-  patientsCount = 1250,
+  contactsCount = 1250,
   renewalDueCount = 150,
   campaignsActive = 3,
   messagesSentToday = 45,
@@ -188,13 +188,13 @@ export default function RenewalDashboard({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Patients
+              Total Contacts
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {patientsCount.toLocaleString()}
+              {contactsCount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               +12% from last month
@@ -472,7 +472,7 @@ export default function RenewalDashboard({
           <CardHeader>
             <CardTitle>Upcoming Renewals</CardTitle>
             <CardDescription>
-              Patients with renewals due in the next 90 days
+              Contacts with renewals due in the next 90 days
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -483,7 +483,7 @@ export default function RenewalDashboard({
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div className="flex-1">
-                    <div className="font-medium">{renewal.patient_name}</div>
+                    <div className="font-medium">{renewal.contact_name}</div>
                     <div className="text-sm text-gray-600">
                       {renewal.license_type} License • {renewal.license_number}
                     </div>
@@ -542,7 +542,7 @@ export default function RenewalDashboard({
                     <div>
                       <div className="text-gray-600">Target</div>
                       <div className="font-medium">
-                        {campaign.total_patients}
+                        {campaign.total_contacts}
                       </div>
                     </div>
                     <div>

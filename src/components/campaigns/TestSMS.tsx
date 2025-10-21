@@ -24,7 +24,7 @@ export default function TestSMS() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  const testPatient = {
+  const testContact = {
     first_name: "John",
     last_name: "Smith",
     license_type: "Medical",
@@ -51,7 +51,7 @@ export default function TestSMS() {
         body: JSON.stringify({
           phoneNumber,
           message,
-          patient: testPatient,
+          patient: testContact,
         }),
       });
 
@@ -112,15 +112,15 @@ export default function TestSMS() {
 
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="text-sm text-blue-800">
-            <div className="font-medium mb-2">Test Patient Data:</div>
+            <div className="font-medium mb-2">Test Contact Data:</div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                Name: {testPatient.first_name} {testPatient.last_name}
+                Name: {testContact.first_name} {testContact.last_name}
               </div>
-              <div>License: {testPatient.license_type}</div>
-              <div>Number: {testPatient.license_number}</div>
-              <div>Specialty: {testPatient.specialty}</div>
-              <div>Renewal: {testPatient.next_exam_due}</div>
+              <div>License: {testContact.license_type}</div>
+              <div>Number: {testContact.license_number}</div>
+              <div>Specialty: {testContact.specialty}</div>
+              <div>Renewal: {testContact.next_exam_due}</div>
             </div>
           </div>
         </div>

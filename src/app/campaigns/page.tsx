@@ -188,7 +188,7 @@ export default function CampaignsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ patientIds: [] }), // Empty array for now, will be populated by backend
+        body: JSON.stringify({ contactIds: [] }), // Empty array for now, will be populated by backend
       });
 
       if (!response.ok) {

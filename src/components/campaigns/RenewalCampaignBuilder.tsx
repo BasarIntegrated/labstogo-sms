@@ -33,7 +33,7 @@ interface RenewalCampaignBuilderProps {
   onPreview: (campaign: RenewalCampaign) => void;
   onSchedule: (campaign: RenewalCampaign) => void;
   templates?: RenewalCampaignTemplate[];
-  patientsCount?: number;
+  contactsCount?: number;
   initialData?: RenewalCampaign;
 }
 
@@ -122,7 +122,7 @@ export default function RenewalCampaignBuilder({
   onPreview,
   onSchedule,
   templates = DEFAULT_TEMPLATES,
-  patientsCount = 0,
+  contactsCount = 0,
   initialData,
 }: RenewalCampaignBuilderProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -177,7 +177,7 @@ export default function RenewalCampaignBuilder({
     }));
   };
 
-  const estimatedRecipients = Math.floor(patientsCount * 0.3); // Rough estimate
+  const estimatedRecipients = Math.floor(contactsCount * 0.3); // Rough estimate
 
   return (
     <div className="space-y-6">
@@ -193,7 +193,7 @@ export default function RenewalCampaignBuilder({
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
           <Users className="w-4 h-4" />
-          <span>{patientsCount} total patients</span>
+          <span>{contactsCount} total contacts</span>
           <span>•</span>
           <span>~{estimatedRecipients} eligible</span>
         </div>
@@ -358,7 +358,7 @@ export default function RenewalCampaignBuilder({
                 <span>Targeting</span>
               </CardTitle>
               <CardDescription>
-                Select which patients to include in this campaign
+                Select which contacts to include in this campaign
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

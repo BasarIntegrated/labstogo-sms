@@ -16,7 +16,7 @@ import { useState } from "react";
 
 interface SimpleCampaignBuilderProps {
   onSave: (campaign: SimpleCampaign) => void;
-  patientsCount?: number;
+  contactsCount?: number;
   initialData?: SimpleCampaign;
 }
 
@@ -29,7 +29,7 @@ interface SimpleCampaign {
 
 export default function SimpleCampaignBuilder({
   onSave,
-  patientsCount = 0,
+  contactsCount = 0,
   initialData,
 }: SimpleCampaignBuilderProps) {
   const [campaign, setCampaign] = useState<SimpleCampaign>(
@@ -61,8 +61,8 @@ export default function SimpleCampaignBuilder({
           {initialData ? "Edit Campaign" : "Create New Campaign"}
         </h1>
         <p className="text-gray-600">
-          {patientsCount.toLocaleString()} total patients • ~
-          {Math.round(patientsCount * 0.3).toLocaleString()} eligible
+          {contactsCount.toLocaleString()} total contacts • ~
+          {Math.round(contactsCount * 0.3).toLocaleString()} eligible
         </p>
       </div>
 
@@ -163,8 +163,8 @@ export default function SimpleCampaignBuilder({
               Available Variables:
             </h4>
             <div className="grid grid-cols-2 gap-2 text-sm text-blue-800">
-              <div>• {"{{ first_name }}"} - Patient's first name</div>
-              <div>• {"{{ last_name }}"} - Patient's last name</div>
+              <div>• {"{{ first_name }}"} - Contact's first name</div>
+              <div>• {"{{ last_name }}"} - Contact's last name</div>
               <div>• {"{{ license_type }}"} - Medical, Nursing, etc.</div>
               <div>• {"{{ license_number }}"} - License number</div>
               <div>• {"{{ renewal_deadline }}"} - Renewal deadline date</div>

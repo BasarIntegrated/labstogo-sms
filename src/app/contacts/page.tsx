@@ -1,6 +1,6 @@
 "use client";
 
-import { PatientImport } from "@/components/patients/PatientImport";
+import { ContactImport } from "@/components/contacts/ContactImport";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -864,7 +864,7 @@ export default function ContactsPage() {
                 </button>
               </div>
 
-              <PatientImport
+              <ContactImport
                 onImportComplete={(result: any) => {
                   try {
                     console.log("Import completed:", result);

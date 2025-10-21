@@ -267,7 +267,7 @@ export default function Dashboard() {
                         name: string;
                         description?: string;
                         status: string;
-                        total_patients?: number;
+                        total_contacts?: number;
                         sent_count?: number;
                         created_at: string;
                       }) => (
@@ -298,7 +298,7 @@ export default function Dashboard() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {campaign.total_patients || 0}
+                            {campaign.total_contacts || 0}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {campaign.sent_count || 0}
