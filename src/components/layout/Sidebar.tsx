@@ -3,6 +3,7 @@
 import {
   BarChart3,
   HelpCircle,
+  History,
   LogOut,
   MessageSquare,
   Settings,
@@ -23,6 +24,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: "Dashboard", href: "/", icon: BarChart3 },
     { name: "Leads", href: "/leads", icon: Users },
     { name: "Campaigns", href: "/campaigns", icon: MessageSquare },
+    { name: "Message History", href: "/messages", icon: History },
   ];
 
   const secondaryNavigation = [

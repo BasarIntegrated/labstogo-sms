@@ -201,7 +201,7 @@ export default function CampaignsPage() {
 
       // Refresh campaigns data
       window.location.reload();
-      alert("Campaign started successfully!");
+      alert(result.message || "Campaign started successfully!");
     } catch (error: any) {
       console.error("Error starting campaign:", error);
       alert(
@@ -467,6 +467,7 @@ export default function CampaignsPage() {
                 <option value="draft">Draft</option>
                 <option value="scheduled">Scheduled</option>
                 <option value="active">Active</option>
+                <option value="paused">Paused</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
@@ -478,7 +479,7 @@ export default function CampaignsPage() {
       {/* Campaigns Table */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <div className="overflow-hidden">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -615,6 +616,20 @@ export default function CampaignsPage() {
                             >
                               <Play className="w-3 h-3 mr-1" />
                               Resume
+                            </button>
+                          )}
+
+                          {/* Start Cancelled Campaign Button */}
+                          {campaign.status === "cancelled" && (
+                            <button
+                              onClick={() =>
+                                campaign.id && handleStartCampaign(campaign.id)
+                              }
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 transition-colors"
+                              title="Start Campaign"
+                            >
+                              <Play className="w-3 h-3 mr-1" />
+                              Start
                             </button>
                           )}
 

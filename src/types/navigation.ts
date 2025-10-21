@@ -107,6 +107,13 @@ export const navigationItems: NavItem[] = [
     requiresAuth: true,
   },
   {
+    id: "messages",
+    label: "Message History",
+    href: "/messages",
+    icon: "history",
+    requiresAuth: true,
+  },
+  {
     id: "settings",
     label: "Settings",
     href: "/settings",

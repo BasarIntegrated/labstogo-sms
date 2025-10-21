@@ -8,34 +8,50 @@ export async function GET(
   try {
     const { id: campaignId } = await params;
 
-    // Fetch campaign recipients
-    const { data: recipients, error: recipientsError } = await supabaseAdmin
-      .from("campaign_recipients")
-      .select(`
-        *,
+    // Fetch SMS messages for this campaign
+    const { data: smsMessages, error: smsError } = await supabaseAdmin
+      .from("sms_messages")
+      .select(
+        `
+        id,
+        campaign_id,
+        contact_id,
+        phone_number,
+        message,
+        status,
+        provider_message_id,
+        provider_response,
+        sent_at,
+        delivered_at,
+        failed_at,
+        retry_count,
+        last_retry_at,
+        created_at,
+        updated_at,
         contacts (
           id,
           first_name,
           last_name,
-          phone_number,
-          email
+          phone_number
         )
-      `)
-      .eq("campaign_id", campaignId);
+      `
+      )
+      .eq("campaign_id", campaignId)
+      .order("created_at", { ascending: false });
 
-    if (recipientsError) {
-      console.error("Error fetching recipients:", recipientsError);
+    if (smsError) {
+      console.error("Error fetching SMS messages:", smsError);
       return NextResponse.json(
-        { error: "Failed to fetch recipients" },
+        { error: "Failed to fetch SMS messages" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(recipients || []);
+    return NextResponse.json(smsMessages || []);
   } catch (error) {
-    console.error("Error fetching campaign recipients:", error);
+    console.error("Error fetching SMS messages:", error);
     return NextResponse.json(
-      { error: "Failed to fetch recipients" },
+      { error: "Failed to fetch SMS messages" },
       { status: 500 }
     );
   }

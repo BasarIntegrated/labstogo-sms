@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Phone,
   RefreshCw,
+  RotateCcw,
   Users,
   XCircle,
 } from "lucide-react";
@@ -23,6 +24,9 @@ export default function CampaignMonitoring({
 }: CampaignMonitoringProps) {
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds
   const [showDetails, setShowDetails] = useState(false);
+  const [retryingMessages, setRetryingMessages] = useState<Set<string>>(
+    new Set()
+  );
 
   // Fetch campaign details
   const {
@@ -157,6 +161,39 @@ export default function CampaignMonitoring({
         return <Clock className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
+    }
+  };
+
+  const handleRetryMessage = async (messageId: string) => {
+    setRetryingMessages((prev) => new Set(prev).add(messageId));
+
+    try {
+      const response = await fetch(`/api/sms-messages/${messageId}/retry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          retryReason: "Manual retry from Campaign Monitoring",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to retry message");
+      }
+
+      // Refresh the data to show updated status
+      // The useQuery will automatically refetch due to the refetchInterval
+      console.log("Message queued for retry successfully");
+    } catch (error) {
+      console.error("Error retrying message:", error);
+    } finally {
+      setRetryingMessages((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
     }
   };
 
@@ -344,13 +381,30 @@ export default function CampaignMonitoring({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Delivered At
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Error Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Retry Count
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {smsMessages?.map((message: SMSMessage) => (
                   <tr key={message.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {message.contact_id}
+                      {message.contacts?.first_name &&
+                      message.contacts?.last_name
+                        ? `${message.contacts.first_name} ${message.contacts.last_name}`
+                        : message.contacts?.first_name ||
+                          message.contacts?.last_name
+                        ? `${message.contacts.first_name || ""} ${
+                            message.contacts.last_name || ""
+                          }`.trim()
+                        : message.contact_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex items-center">
@@ -377,6 +431,77 @@ export default function CampaignMonitoring({
                       {message.delivered_at
                         ? new Date(message.delivered_at).toLocaleString()
                         : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                      {message.status === "failed" &&
+                      message.provider_response ? (
+                        <div className="space-y-1">
+                          {message.provider_response.error && (
+                            <div className="text-red-600 text-xs">
+                              <strong>Error:</strong>{" "}
+                              {message.provider_response.error}
+                            </div>
+                          )}
+                          {message.provider_response.code && (
+                            <div className="text-gray-600 text-xs">
+                              <strong>Code:</strong>{" "}
+                              {message.provider_response.code}
+                            </div>
+                          )}
+                          {message.provider_response.moreInfo && (
+                            <div className="text-gray-600 text-xs">
+                              <strong>Info:</strong>{" "}
+                              {message.provider_response.moreInfo}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex items-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            (message.retry_count || 0) === 0
+                              ? "bg-gray-100 text-gray-800"
+                              : (message.retry_count || 0) <= 2
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {message.retry_count || 0}
+                        </span>
+                        {message.last_retry_at && (
+                          <span className="ml-2 text-xs text-gray-500">
+                            Last:{" "}
+                            {new Date(message.last_retry_at).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {message.status === "failed" ? (
+                        <button
+                          onClick={() => handleRetryMessage(message.id)}
+                          disabled={retryingMessages.has(message.id)}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {retryingMessages.has(message.id) ? (
+                            <>
+                              <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                              Retrying...
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Retry
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        "-"
+                      )}
                     </td>
                   </tr>
                 ))}

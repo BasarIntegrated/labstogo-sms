@@ -299,6 +299,8 @@ export interface SMSMessage {
   delivered_at?: string;
   failed_at?: string;
   error_message?: string;
+  retry_count?: number;
+  last_retry_at?: string;
 
   // Comprehensive timestamp coverage
   created_at: string;
