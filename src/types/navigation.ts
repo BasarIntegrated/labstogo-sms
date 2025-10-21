@@ -93,18 +93,11 @@ export const navigationItems: NavItem[] = [
       {
         id: "contacts-import",
         label: "Import Contacts",
-        href: "/patients/import",
+        href: "/contacts/import",
         icon: "upload",
         requiresAuth: true,
       },
     ],
-  },
-  {
-    id: "templates",
-    label: "Templates",
-    href: "/templates",
-    icon: "file-text",
-    requiresAuth: true,
   },
   {
     id: "messages",
