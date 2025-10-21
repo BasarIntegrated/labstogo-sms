@@ -37,7 +37,7 @@ export async function GET(
       `
       )
       .eq("campaign_id", campaignId)
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
 
     if (smsError) {
       console.error("Error fetching SMS messages:", smsError);

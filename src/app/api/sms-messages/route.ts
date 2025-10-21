@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         )
       `
       )
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
 
     // Apply filters
     if (status) {
