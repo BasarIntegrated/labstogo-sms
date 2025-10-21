@@ -301,6 +301,16 @@ export interface SMSMessage {
   error_message?: string;
   retry_count?: number;
   last_retry_at?: string;
+  contacts?: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
+  };
+  campaigns?: {
+    id: string;
+    name?: string;
+  };
 
   // Comprehensive timestamp coverage
   created_at: string;
