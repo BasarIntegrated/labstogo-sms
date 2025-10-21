@@ -22,6 +22,7 @@ export async function POST(
         status,
         retry_count,
         last_retry_at,
+        provider_response,
         contacts (
           id,
           first_name,
