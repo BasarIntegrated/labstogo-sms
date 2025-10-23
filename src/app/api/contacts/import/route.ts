@@ -3,7 +3,7 @@ import {
   failImportProgress,
 } from "@/lib/importProgress";
 import { supabaseAdmin } from "@/lib/supabase";
-import { Contact } from "@/types/database";
+import { Patient } from "@/types/database";
 import { parse } from "csv-parse/sync";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -159,7 +159,7 @@ export interface ImportError {
 export interface DuplicateInfo {
   row: number;
   phoneNumber: string;
-  existingContact: Contact;
+  existingPatient: Patient;
   action: "skip" | "update" | "merge";
 }
 

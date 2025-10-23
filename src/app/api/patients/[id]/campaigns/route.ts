@@ -49,7 +49,7 @@ export async function GET(
       smsMessages?.map((sms) => ({
         id: sms.id,
         campaign_id: sms.campaign_id,
-        name: sms.campaigns?.[0]?.name || "Unknown Campaign",
+        name: (sms.campaigns as any)?.name || "Unknown Campaign",
         status: sms.status,
         sent_at: sms.sent_at,
         delivered_at: sms.delivered_at,

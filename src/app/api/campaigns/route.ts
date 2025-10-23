@@ -1,6 +1,23 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
+// Helper function to get the default admin user ID
+async function getDefaultAdminUserId(): Promise<string> {
+  const { data: adminUser, error } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq("email", "admin@messageblasting.com")
+    .single();
+
+  if (error || !adminUser) {
+    console.error("Error fetching admin user:", error);
+    // Fallback to a default UUID if admin user not found
+    return "550e8400-e29b-41d4-a716-446655440000";
+  }
+
+  return adminUser.id;
+}
+
 // GET /api/campaigns - Fetch all campaigns
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +74,7 @@ export async function POST(request: NextRequest) {
       message_template,
       status,
       recipient_type,
-      created_by: created_by || "550e8400-e29b-41d4-a716-446655440000",
+      created_by: created_by || (await getDefaultAdminUserId()),
     };
 
     // Add optional fields if provided

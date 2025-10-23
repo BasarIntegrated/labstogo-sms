@@ -56,7 +56,7 @@ export async function POST(
     }
 
     // Check if the campaign is still active
-    if (smsMessage.campaigns?.[0]?.status !== "active") {
+    if ((smsMessage.campaigns as any)?.status !== "active") {
       return NextResponse.json(
         { error: "Campaign is not active" },
         { status: 400 }

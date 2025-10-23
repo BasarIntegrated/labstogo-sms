@@ -177,10 +177,10 @@ export const ContactImport: React.FC<ContactImportProps> = ({
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Import Patients
+          Import Contacts
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Upload a CSV file to import patients in bulk
+          Upload a CSV file to import contacts in bulk
         </p>
       </div>
 

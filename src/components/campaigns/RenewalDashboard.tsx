@@ -13,7 +13,6 @@ import {
 import {
   AlertTriangle,
   Bell,
-  Calendar,
   Clock,
   FileText,
   MessageSquare,
@@ -135,9 +134,9 @@ export default function RenewalDashboard({
   recentCampaigns = mockCampaigns,
   renewalStats = mockStats,
 }: RenewalDashboardProps) {
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "campaigns"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "campaigns">(
+    "overview"
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {

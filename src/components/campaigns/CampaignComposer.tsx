@@ -49,7 +49,7 @@ export default function CampaignComposer({
     recipient_groups: [],
     recipient_contacts: [],
     scheduled_at: "",
-    created_by: "00000000-0000-0000-0000-000000000000", // Mock user ID
+    created_by: "", // Will be set by the API
   });
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function CampaignComposer({
         recipient_groups: [],
         recipient_contacts: [],
         scheduled_at: "",
-        created_by: "00000000-0000-0000-0000-000000000000",
+        created_by: "", // Will be set by the API
       });
     }
   }, [campaign]);
