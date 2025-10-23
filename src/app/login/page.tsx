@@ -118,15 +118,6 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </div>
-
-          <div className="text-center">
-            <div className="text-sm text-gray-600">
-              <p className="mb-2">Demo Credentials:</p>
-              <p className="text-xs">
-                <strong>Admin:</strong> admin@labstogo.info / admin123
-              </p>
-            </div>
-          </div>
         </form>
       </div>
     </div>
