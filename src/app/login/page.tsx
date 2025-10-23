@@ -123,7 +123,7 @@ export default function LoginPage() {
             <div className="text-sm text-gray-600">
               <p className="mb-2">Demo Credentials:</p>
               <p className="text-xs">
-                <strong>Admin:</strong> admin@messageblasting.com / admin123
+                <strong>Admin:</strong> admin@labstogo.info / admin123
               </p>
             </div>
           </div>

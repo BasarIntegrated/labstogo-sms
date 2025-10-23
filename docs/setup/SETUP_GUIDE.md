@@ -75,7 +75,7 @@ node scripts/seed-renewal-campaigns.js
 
 This creates:
 
-- Default admin user (admin@messageblasting.com / admin123)
+- Default admin user (admin@labstogo.info / admin123)
 - Default contact group
 - Renewal campaign templates
 - Message templates for renewals
@@ -92,7 +92,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 After seeding the database, you can log in with:
 
-- **Admin**: admin@messageblasting.com / admin123
+- **Admin**: admin@labstogo.info / admin123
 - **User**: user@messageblasting.com / user123 (if created)
 
 ## 📱 Features Overview

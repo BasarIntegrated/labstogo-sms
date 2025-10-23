@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 import * as dotenv from "dotenv";
 import * as path from "path";
 
@@ -148,11 +149,12 @@ async function clearAllData() {
 async function recreateDefaultData() {
   try {
     // Insert default admin user
+    const hashedPassword = await bcrypt.hash("admin123", 12);
     const { data: adminUser, error: userError } = await supabase
       .from("users")
       .insert({
-        email: "admin@messageblasting.com",
-        password_hash: "admin123",
+        email: "admin@labstogo.info",
+        password_hash: hashedPassword,
         first_name: "Admin",
         last_name: "User",
         role: "admin",

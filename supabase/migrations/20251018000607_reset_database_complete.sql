@@ -304,7 +304,7 @@ CREATE POLICY "Users can view upload errors for their uploads" ON upload_errors 
 -- Insert default admin user
 INSERT INTO users (email, password_hash, first_name, last_name, role) 
 VALUES (
-    'admin@messageblasting.com', 
+    'admin@labstogo.info', 
     'admin123', 
     'Admin', 
     'User', 
@@ -316,7 +316,7 @@ INSERT INTO contact_groups (name, description, created_by)
 VALUES (
     'Default Group', 
     'Default group for all contacts', 
-    (SELECT id FROM users WHERE email = 'admin@messageblasting.com' LIMIT 1)
+    (SELECT id FROM users WHERE email = 'admin@labstogo.info' LIMIT 1)
 );
 
 -- Insert default message template
@@ -326,5 +326,5 @@ VALUES (
     'Default welcome message template', 
     'Hello {{first_name}}, welcome to our service! Your phone number is {{phone_number}} and email is {{email}}.',
     ARRAY['first_name', 'last_name', 'phone_number', 'email', 'group', 'license_expiration_date'],
-    (SELECT id FROM users WHERE email = 'admin@messageblasting.com' LIMIT 1)
+    (SELECT id FROM users WHERE email = 'admin@labstogo.info' LIMIT 1)
 );

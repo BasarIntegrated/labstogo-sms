@@ -6,7 +6,7 @@ async function getDefaultAdminUserId(): Promise<string> {
   const { data: adminUser, error } = await supabaseAdmin
     .from("users")
     .select("id")
-    .eq("email", "admin@messageblasting.com")
+    .eq("email", "admin@labstogo.info")
     .single();
 
   if (error || !adminUser) {
