@@ -184,12 +184,19 @@ export async function POST(request: NextRequest) {
       last_name: body.last_name || null,
       email: body.email || null,
       company: body.company || null,
+      address: body.address || null,
+      city: body.city || null,
+      state: body.state || null,
+      zip_code: body.zip_code || null,
+      date_of_birth: body.date_of_birth || null,
+      job_type: body.job_type || null,
+      expires: body.expires || null,
+      license_expiration_date: body.license_expiration_date || null,
       source: body.source || null,
       status: body.status || "active",
-      group_id: body.group_id || null,
-      license_expiration_date: body.license_expiration_date || null,
+      group_id:
+        body.group_id && body.group_id.trim() !== "" ? body.group_id : null,
       others: body.others || null,
-      preferred_contact_method: body.preferred_contact_method || "sms",
     };
 
     const { data, error } = await supabaseAdmin
@@ -209,6 +216,117 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ contact: data }, { status: 201 });
   } catch (error) {
     console.error("Error in contacts POST:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/contacts - Update existing contact
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Validate required fields
+    if (!body.id) {
+      return NextResponse.json(
+        { error: "Contact ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const contactData: any = {};
+
+    // Only update fields that are provided
+    if (body.phone_number !== undefined)
+      contactData.phone_number = body.phone_number;
+    if (body.first_name !== undefined)
+      contactData.first_name = body.first_name || null;
+    if (body.last_name !== undefined)
+      contactData.last_name = body.last_name || null;
+    if (body.email !== undefined) contactData.email = body.email || null;
+    if (body.company !== undefined) contactData.company = body.company || null;
+    if (body.address !== undefined) contactData.address = body.address || null;
+    if (body.city !== undefined) contactData.city = body.city || null;
+    if (body.state !== undefined) contactData.state = body.state || null;
+    if (body.zip_code !== undefined)
+      contactData.zip_code = body.zip_code || null;
+    if (body.date_of_birth !== undefined)
+      contactData.date_of_birth = body.date_of_birth || null;
+    if (body.job_type !== undefined)
+      contactData.job_type = body.job_type || null;
+    if (body.expires !== undefined) contactData.expires = body.expires || null;
+    if (body.license_expiration_date !== undefined)
+      contactData.license_expiration_date =
+        body.license_expiration_date || null;
+    if (body.status !== undefined) contactData.status = body.status;
+    if (body.group_id !== undefined) {
+      contactData.group_id =
+        body.group_id && body.group_id.trim() !== "" ? body.group_id : null;
+    }
+    if (body.others !== undefined) contactData.others = body.others || null;
+    if (body.source !== undefined) contactData.source = body.source || null;
+
+    console.log("Update contact data:", JSON.stringify(contactData, null, 2));
+
+    // Add updated_at timestamp
+    contactData.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabaseAdmin
+      .from("contacts")
+      .update(contactData)
+      .eq("id", body.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating contact:", error);
+      return NextResponse.json(
+        { error: "Failed to update contact" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ contact: data }, { status: 200 });
+  } catch (error) {
+    console.error("Error in contacts PUT:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/contacts - Delete contact
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Contact ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabaseAdmin
+      .from("contacts")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting contact:", error);
+      return NextResponse.json(
+        { error: "Failed to delete contact" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("Error in contacts DELETE:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

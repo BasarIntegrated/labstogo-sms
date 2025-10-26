@@ -1,6 +1,8 @@
 "use client";
 
+import { AddContactModal } from "@/components/contacts/AddContactModal";
 import { ContactImport } from "@/components/contacts/ContactImport";
+import { EditContactModal } from "@/components/contacts/EditContactModal";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -51,6 +53,10 @@ export default function ContactsPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [expiresFrom, setExpiresFrom] = useState("");
   const [expiresTo, setExpiresTo] = useState("");
@@ -268,6 +274,39 @@ export default function ContactsPage() {
     } catch (error) {
       console.error("Error in handleSort:", error);
     }
+  };
+
+  const handleEditContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteContact = async (contactId: string) => {
+    try {
+      const response = await fetch(`/api/contacts?id=${contactId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete contact");
+      }
+
+      // Refresh the contacts list
+      if (refetchContacts) {
+        refetchContacts();
+      }
+
+      setShowDeleteConfirm(false);
+      setContactToDelete(null);
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact. Please try again.");
+    }
+  };
+
+  const openDeleteConfirm = (contactId: string) => {
+    setContactToDelete(contactId);
+    setShowDeleteConfirm(true);
   };
 
   const handleAssignToCampaign = async () => {
@@ -723,10 +762,18 @@ export default function ContactsPage() {
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
+                            <button
+                              onClick={() => handleEditContact(contact)}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Edit contact"
+                            >
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button className="text-red-600 hover:text-red-900">
+                            <button
+                              onClick={() => openDeleteConfirm(contact.id)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Delete contact"
+                            >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -1017,6 +1064,98 @@ export default function ContactsPage() {
                     : campaignsLoading
                     ? "Loading..."
                     : `Assign All ${totalContacts} Contacts`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Contact Modal */}
+      <AddContactModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          if (refetchContacts) {
+            refetchContacts();
+          }
+        }}
+      />
+
+      {/* Edit Contact Modal */}
+      <EditContactModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedContact(null);
+        }}
+        onSuccess={() => {
+          if (refetchContacts) {
+            refetchContacts();
+          }
+        }}
+        contact={selectedContact}
+      />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Contact
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setContactToDelete(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <span className="sr-only">Close</span>
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">
+                  Are you sure you want to delete this contact? This action
+                  cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setContactToDelete(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (contactToDelete) {
+                      handleDeleteContact(contactToDelete);
+                    }
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Delete Contact
                 </button>
               </div>
             </div>
