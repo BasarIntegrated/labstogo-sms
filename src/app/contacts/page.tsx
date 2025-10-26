@@ -3,6 +3,7 @@
 import { AddContactModal } from "@/components/contacts/AddContactModal";
 import { ContactImport } from "@/components/contacts/ContactImport";
 import { EditContactModal } from "@/components/contacts/EditContactModal";
+import { GroupsManagementModal } from "@/components/contacts/GroupsManagementModal";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -1095,6 +1096,12 @@ export default function ContactsPage() {
           }
         }}
         contact={selectedContact}
+      />
+
+      {/* Groups Management Modal */}
+      <GroupsManagementModal
+        isOpen={showGroupModal}
+        onClose={() => setShowGroupModal(false)}
       />
 
       {/* Delete Confirmation Modal */}
