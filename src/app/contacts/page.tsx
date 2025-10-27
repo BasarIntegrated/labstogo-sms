@@ -422,38 +422,45 @@ export default function ContactsPage() {
     setIsAssigning(true);
 
     try {
-      // Fetch ALL contacts that match current filters (not just paginated ones)
-      const params = new URLSearchParams();
-      params.append("limit", "10000"); // Large limit to get all contacts
-      params.append("page", "0"); // Start from first page
+      let contactIds = [];
+      
+      // Check if we should use selected contacts or all filtered contacts
+      if (selectedContacts.length > 0) {
+        // Use selected contacts
+        contactIds = selectedContacts;
+        console.log(`Assigning ${contactIds.length} selected contacts to campaign ${selectedCampaignId}`);
+      } else {
+        // Fetch ALL contacts that match current filters (not just paginated ones)
+        const params = new URLSearchParams();
+        params.append("limit", "10000"); // Large limit to get all contacts
+        params.append("page", "0"); // Start from first page
 
-      if (searchTerm) params.append("search", searchTerm);
-      if (selectedStatus !== "all") params.append("status", selectedStatus);
-      if (expiresFrom) params.append("expires_from", expiresFrom);
-      if (expiresTo) params.append("expires_to", expiresTo);
-      params.append("sortBy", sortBy);
-      params.append("sortOrder", sortOrder);
+        if (searchTerm) params.append("search", searchTerm);
+        if (selectedStatus !== "all") params.append("status", selectedStatus);
+        if (selectedGroup !== "all") params.append("group", selectedGroup);
+        if (expiresFrom) params.append("expires_from", expiresFrom);
+        if (expiresTo) params.append("expires_to", expiresTo);
+        params.append("sortBy", sortBy);
+        params.append("sortOrder", sortOrder);
 
-      console.log("Fetching all filtered contacts for assignment...");
-      const allContactsResponse = await fetch(`/api/contacts?${params}`);
+        console.log("Fetching all filtered contacts for assignment...");
+        const allContactsResponse = await fetch(`/api/contacts?${params}`);
 
-      if (!allContactsResponse.ok) {
-        throw new Error("Failed to fetch all contacts for assignment");
+        if (!allContactsResponse.ok) {
+          throw new Error("Failed to fetch all contacts for assignment");
+        }
+
+        const allContactsData = await allContactsResponse.json();
+        const allFilteredContacts = allContactsData.contacts || [];
+        contactIds = allFilteredContacts.map((contact: any) => contact.id);
+
+        console.log(
+          `Assigning ${contactIds.length} filtered contacts to campaign ${selectedCampaignId}`
+        );
       }
 
-      const allContactsData = await allContactsResponse.json();
-      const allFilteredContacts = allContactsData.contacts || [];
-      const contactIds = allFilteredContacts.map((contact: any) => contact.id);
-
-      console.log(
-        `Assigning ${contactIds.length} contacts to campaign ${selectedCampaignId}`
-      );
       console.log("Selected campaign ID:", selectedCampaignId);
-      console.log("Total filtered contacts:", allFilteredContacts.length);
-      console.log(
-        "Available campaigns:",
-        campaigns.map((c: any) => ({ id: c.id, name: c.name }))
-      );
+      console.log("Available campaigns:", campaigns.map((c: any) => ({ id: c.id, name: c.name })));
 
       // Call API to assign contacts to campaign
       const response = await fetch(
@@ -481,11 +488,13 @@ export default function ContactsPage() {
       console.log("Campaign assignment successful:", result);
 
       // Show success message
-      alert(`Successfully assigned ${contactIds.length} contacts to campaign!`);
+      const assignType = selectedContacts.length > 0 ? "selected" : "filtered";
+      alert(`Successfully assigned ${contactIds.length} ${assignType} contacts to campaign!`);
 
       // Close modal and reset state
       setShowCampaignModal(false);
       setSelectedCampaignId("");
+      setSelectedContacts([]);
     } catch (error: any) {
       console.error("Error assigning contacts to campaign:", error);
       alert(
@@ -605,7 +614,10 @@ export default function ContactsPage() {
               Add Contact
             </button>
             <button
-              onClick={() => setShowCampaignModal(true)}
+              onClick={() => {
+                setSelectedCampaignId("");
+                setShowCampaignModal(true);
+              }}
               disabled={campaignsLoading || campaigns.length === 0}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -613,12 +625,39 @@ export default function ContactsPage() {
               {campaignsLoading ? "Loading..." : "Assign All to Campaign"}
             </button>
             <button
-              onClick={openAssignGroupModal}
-              disabled={selectedContacts.length === 0}
+              onClick={() => {
+                if (selectedContacts.length > 0) {
+                  setShowCampaignModal(true);
+                }
+              }}
+              disabled={campaignsLoading || campaigns.length === 0 || selectedContacts.length === 0}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              {selectedContacts.length > 0 ? `Assign Selected (${selectedContacts.length}) to Campaign` : "Assign Selected to Campaign"}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCampaignId("");
+                openAssignGroupModal();
+              }}
+              disabled={groups.length === 0}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Tag className="w-4 h-4 mr-2" />
-              Assign Group ({selectedContacts.length})
+              Assign All to Group
+            </button>
+            <button
+              onClick={() => {
+                if (selectedContacts.length > 0) {
+                  openAssignGroupModal();
+                }
+              }}
+              disabled={selectedContacts.length === 0 || groups.length === 0}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Tag className="w-4 h-4 mr-2" />
+              {selectedContacts.length > 0 ? `Assign Selected (${selectedContacts.length})` : "Assign Selected"}
             </button>
           </div>
         </div>
@@ -787,6 +826,61 @@ export default function ContactsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bulk Actions Above Table */}
+      <div className="bg-white shadow rounded-lg mb-4 p-4">
+        <div className="flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedContacts.length > 0 ? `${selectedContacts.length} selected` : "Select contacts to assign"}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setSelectedCampaignId("");
+                setShowCampaignModal(true);
+              }}
+              disabled={campaignsLoading || campaigns.length === 0}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign All to Campaign
+            </button>
+            <button
+              onClick={() => {
+                if (selectedContacts.length > 0) {
+                  setShowCampaignModal(true);
+                }
+              }}
+              disabled={campaignsLoading || campaigns.length === 0 || selectedContacts.length === 0}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign Selected ({selectedContacts.length}) to Campaign
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCampaignId("");
+                openAssignGroupModal();
+              }}
+              disabled={groups.length === 0}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign All to Group
+            </button>
+            <button
+              onClick={() => {
+                if (selectedContacts.length > 0) {
+                  openAssignGroupModal();
+                }
+              }}
+              disabled={selectedContacts.length === 0 || groups.length === 0}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Assign Selected ({selectedContacts.length})
+            </button>
           </div>
         </div>
       </div>
@@ -1154,8 +1248,9 @@ export default function ContactsPage() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-3">
-                  Assign all {totalContacts} contact
-                  {totalContacts !== 1 ? "s" : ""} to a campaign:
+                  {selectedContacts.length > 0
+                    ? `Assign ${selectedContacts.length} selected contact${selectedContacts.length !== 1 ? "s" : ""} to a campaign:`
+                    : `Assign all ${totalContacts} filtered contact${totalContacts !== 1 ? "s" : ""} to a campaign:`}
                 </p>
 
                 <div className="space-y-2">
@@ -1224,6 +1319,8 @@ export default function ContactsPage() {
                     ? "Assigning..."
                     : campaignsLoading
                     ? "Loading..."
+                    : selectedContacts.length > 0
+                    ? `Assign ${selectedContacts.length} Selected Contacts`
                     : `Assign All ${totalContacts} Contacts`}
                 </button>
               </div>
