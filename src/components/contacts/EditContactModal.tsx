@@ -86,7 +86,9 @@ export function EditContactModal({
   }, [contact, isOpen]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -139,9 +141,7 @@ export function EditContactModal({
       <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-semibold text-gray-900">
-            Edit Contact
-          </h3>
+          <h3 className="text-2xl font-semibold text-gray-900">Edit Contact</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -469,4 +469,3 @@ export function EditContactModal({
     </div>
   );
 }
-

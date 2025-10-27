@@ -1421,8 +1421,12 @@ export default function ContactsPage() {
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-3">
                   {assignGroupMode === "selected"
-                    ? `Assign ${selectedContacts.length} selected contact${selectedContacts.length !== 1 ? "s" : ""} to a group:`
-                    : `Assign all filtered contacts to a group:`}
+                    ? `Assign ${selectedContacts.length} selected contact${
+                        selectedContacts.length !== 1 ? "s" : ""
+                      } to a group:`
+                    : `Assign all ${totalContacts} filtered contact${
+                        totalContacts !== 1 ? "s" : ""
+                      } to a group:`}
                 </p>
 
                 <div className="space-y-2">
