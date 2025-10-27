@@ -1491,8 +1491,12 @@ export default function ContactsPage() {
                 >
                   {isAssigning
                     ? "Assigning..."
-                    : `Assign ${selectedContacts.length} Contact${
+                    : assignGroupMode === "selected"
+                    ? `Assign ${selectedContacts.length} Contact${
                         selectedContacts.length !== 1 ? "s" : ""
+                      }`
+                    : `Assign All ${totalContacts} Contact${
+                        totalContacts !== 1 ? "s" : ""
                       }`}
                 </button>
               </div>
