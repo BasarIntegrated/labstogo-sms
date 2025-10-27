@@ -10,6 +10,9 @@ interface ContactImportProps {
   onImportError?: (error: string) => void;
   onComplete?: () => void;
   onRefetch?: () => void;
+  groups?: any[];
+  selectedGroupId?: string;
+  onGroupChange?: (groupId: string) => void;
 }
 
 interface ImportProgress {
@@ -32,8 +35,14 @@ export const ContactImport: React.FC<ContactImportProps> = ({
   onImportError,
   onComplete,
   onRefetch,
+  groups = [],
+  selectedGroupId = "",
+  onGroupChange,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string>(
+    selectedGroupId || ""
+  );
   const [importOptions, setImportOptions] = useState<ImportOptions>({
     skipDuplicates: true,
     updateExisting: true,
@@ -90,6 +99,9 @@ export const ContactImport: React.FC<ContactImportProps> = ({
       formData.append("file", selectedFile);
       formData.append("options", JSON.stringify(importOptions));
       formData.append("sessionId", sessionId);
+      if (selectedGroup) {
+        formData.append("groupId", selectedGroup);
+      }
 
       setProgress({
         stage: "processing",
@@ -163,6 +175,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
     setSelectedFile(null);
     setImportResult(null);
     setErrors([]);
+    setSelectedGroup(selectedGroupId || "");
     setProgress({
       stage: "idle",
       progress: 0,
@@ -170,6 +183,11 @@ export const ContactImport: React.FC<ContactImportProps> = ({
       current: 0,
       total: 0,
     });
+  };
+
+  const handleGroupChange = (groupId: string) => {
+    setSelectedGroup(groupId);
+    onGroupChange?.(groupId);
   };
 
   return (
@@ -229,6 +247,39 @@ export const ContactImport: React.FC<ContactImportProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Group Selection */}
+      {groups.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Assign to Group (Optional)
+            </h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Group
+              </label>
+              <select
+                value={selectedGroup}
+                onChange={(e) => handleGroupChange(e.target.value)}
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">No Group (Default)</option>
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+              {selectedGroup && (
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  All imported contacts will be assigned to the selected group.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Import Options - Hidden, using defaults */}
       {/* 

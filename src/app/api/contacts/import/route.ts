@@ -189,6 +189,7 @@ export async function POST(request: NextRequest) {
     const options = JSON.parse(
       (formData.get("options") as string) || "{}"
     ) as Partial<ImportOptions>;
+    const groupId = formData.get("groupId") as string | null;
     const sessionId =
       (formData.get("sessionId") as string) ||
       `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -245,7 +246,8 @@ export async function POST(request: NextRequest) {
     const result = await processContactImport(
       records,
       importOptions,
-      sessionId
+      sessionId,
+      groupId
     );
 
     // Complete the progress tracking
@@ -304,7 +306,8 @@ export async function POST(request: NextRequest) {
 async function processContactImport(
   records: any[],
   options: ImportOptions,
-  sessionId: string
+  sessionId: string,
+  groupId?: string | null
 ): Promise<ImportResult> {
   if (!supabaseAdmin) {
     throw new Error("Supabase admin client not configured");
@@ -612,7 +615,7 @@ async function processContactImport(
       } else {
         console.log(`🆕 Row ${rowNumber}: Creating new contact`);
         // Create new patient
-        const newPatient = await createNewPatient(supabaseAdmin, record);
+        const newPatient = await createNewPatient(supabaseAdmin, record, groupId);
         if (newPatient) {
           importedPatients.push(newPatient);
           if (phoneNumber) {
@@ -756,7 +759,8 @@ function safeStringTrim(value: any): string | null {
 
 async function createNewPatient(
   supabase: typeof supabaseAdmin,
-  record: any
+  record: any,
+  groupId?: string | null
 ): Promise<Patient | null> {
   try {
     // Ensure we have a valid phone number - this should have been validated earlier
@@ -770,7 +774,7 @@ async function createNewPatient(
       return null;
     }
 
-    const patientData = {
+    const patientData: any = {
       phone_number: phoneNumber,
       first_name: safeStringTrim(record.first_name),
       last_name: safeStringTrim(record.last_name),
@@ -790,6 +794,11 @@ async function createNewPatient(
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
+
+    // Add group_id if provided
+    if (groupId) {
+      patientData.group_id = groupId;
+    }
 
     const { data, error } = await supabase
       .from("contacts")

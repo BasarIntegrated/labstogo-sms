@@ -71,6 +71,7 @@ export default function ContactsPage() {
   const [assignGroupMode, setAssignGroupMode] = useState<"selected" | "all">(
     "selected"
   );
+  const [importGroupId, setImportGroupId] = useState<string>("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(0);
@@ -1187,10 +1188,14 @@ export default function ContactsPage() {
               </div>
 
               <ContactImport
+                groups={groups}
+                selectedGroupId={importGroupId}
+                onGroupChange={setImportGroupId}
                 onImportComplete={(result: any) => {
                   try {
                     console.log("Import completed:", result);
                     setShowUploadModal(false);
+                    setImportGroupId("");
                     // Refresh the contacts list to show new data
                     if (refetchContacts) {
                       refetchContacts();
