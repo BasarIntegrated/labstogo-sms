@@ -43,7 +43,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
   const [selectedGroup, setSelectedGroup] = useState<string>(
     selectedGroupId || ""
   );
-  const [importOptions, setImportOptions] = useState<ImportOptions>({
+  const [importOptions] = useState<ImportOptions>({
     skipDuplicates: true,
     updateExisting: true,
     validatePhoneNumbers: true,

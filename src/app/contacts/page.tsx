@@ -141,7 +141,7 @@ export default function ContactsPage() {
   });
 
   // Get available groups for filter
-  const { data: groupsData, isLoading: groupsLoading } = useQuery({
+  const { data: groupsData } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
       try {
@@ -609,11 +609,6 @@ export default function ContactsPage() {
     return diffDays;
   };
 
-  const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString();
-  };
-
   const formatShortDate = (dateString: string | null | undefined): string => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -625,21 +620,6 @@ export default function ContactsPage() {
 
   // No need for client-side filtering since API handles it
   const filteredContacts = contacts;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "inactive":
-        return "bg-gray-100 text-gray-800";
-      case "unsubscribed":
-        return "bg-red-100 text-red-800";
-      case "bounced":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <div className="w-full py-8">
@@ -976,9 +956,9 @@ export default function ContactsPage() {
                   </tr>
                 ) : (
                   filteredContacts.map((contact: Contact) => {
-                    const daysUntilExpiry = calculateDaysUntilExpiry(
-                      contact.expires
-                    );
+                    // const daysUntilExpiry = calculateDaysUntilExpiry(
+                    //   contact.expires
+                    // );
                     return (
                       <tr key={contact.id} className="hover:bg-gray-50">
                         <td className="px-3 py-4 whitespace-nowrap text-sm">

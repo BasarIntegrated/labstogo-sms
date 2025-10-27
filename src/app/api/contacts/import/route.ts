@@ -372,13 +372,6 @@ async function processContactImport(
 
   // Validate CSV structure after field mapping
   const requiredFields: string[] = []; // No required fields for now
-  const optionalFields = [
-    "phone_number",
-    "first_name",
-    "last_name",
-    "email",
-    "company",
-  ];
 
   const firstRecord = processedRecords[0];
   const missingFields = requiredFields.filter(
