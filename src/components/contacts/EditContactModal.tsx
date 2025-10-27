@@ -52,7 +52,6 @@ export function EditContactModal({
     expires: "",
     license_expiration_date: "",
     status: "active",
-    preferred_contact_method: "sms",
     others: "",
     group_id: "",
   });
