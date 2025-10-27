@@ -423,12 +423,14 @@ export default function ContactsPage() {
 
     try {
       let contactIds = [];
-      
+
       // Check if we should use selected contacts or all filtered contacts
       if (selectedContacts.length > 0) {
         // Use selected contacts
         contactIds = selectedContacts;
-        console.log(`Assigning ${contactIds.length} selected contacts to campaign ${selectedCampaignId}`);
+        console.log(
+          `Assigning ${contactIds.length} selected contacts to campaign ${selectedCampaignId}`
+        );
       } else {
         // Fetch ALL contacts that match current filters (not just paginated ones)
         const params = new URLSearchParams();
@@ -460,7 +462,10 @@ export default function ContactsPage() {
       }
 
       console.log("Selected campaign ID:", selectedCampaignId);
-      console.log("Available campaigns:", campaigns.map((c: any) => ({ id: c.id, name: c.name })));
+      console.log(
+        "Available campaigns:",
+        campaigns.map((c: any) => ({ id: c.id, name: c.name }))
+      );
 
       // Call API to assign contacts to campaign
       const response = await fetch(
@@ -489,7 +494,9 @@ export default function ContactsPage() {
 
       // Show success message
       const assignType = selectedContacts.length > 0 ? "selected" : "filtered";
-      alert(`Successfully assigned ${contactIds.length} ${assignType} contacts to campaign!`);
+      alert(
+        `Successfully assigned ${contactIds.length} ${assignType} contacts to campaign!`
+      );
 
       // Close modal and reset state
       setShowCampaignModal(false);
@@ -612,52 +619,6 @@ export default function ContactsPage() {
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Contact
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCampaignId("");
-                setShowCampaignModal(true);
-              }}
-              disabled={campaignsLoading || campaigns.length === 0}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              {campaignsLoading ? "Loading..." : "Assign All to Campaign"}
-            </button>
-            <button
-              onClick={() => {
-                if (selectedContacts.length > 0) {
-                  setShowCampaignModal(true);
-                }
-              }}
-              disabled={campaignsLoading || campaigns.length === 0 || selectedContacts.length === 0}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              {selectedContacts.length > 0 ? `Assign Selected (${selectedContacts.length}) to Campaign` : "Assign Selected to Campaign"}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedCampaignId("");
-                openAssignGroupModal();
-              }}
-              disabled={groups.length === 0}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Tag className="w-4 h-4 mr-2" />
-              Assign All to Group
-            </button>
-            <button
-              onClick={() => {
-                if (selectedContacts.length > 0) {
-                  openAssignGroupModal();
-                }
-              }}
-              disabled={selectedContacts.length === 0 || groups.length === 0}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Tag className="w-4 h-4 mr-2" />
-              {selectedContacts.length > 0 ? `Assign Selected (${selectedContacts.length})` : "Assign Selected"}
             </button>
           </div>
         </div>
@@ -835,7 +796,9 @@ export default function ContactsPage() {
         <div className="flex flex-wrap gap-2 items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">
-              {selectedContacts.length > 0 ? `${selectedContacts.length} selected` : "Select contacts to assign"}
+              {selectedContacts.length > 0
+                ? `${selectedContacts.length} selected`
+                : "Select contacts to assign"}
             </span>
           </div>
           <div className="flex gap-2">
@@ -855,7 +818,11 @@ export default function ContactsPage() {
                   setShowCampaignModal(true);
                 }
               }}
-              disabled={campaignsLoading || campaigns.length === 0 || selectedContacts.length === 0}
+              disabled={
+                campaignsLoading ||
+                campaigns.length === 0 ||
+                selectedContacts.length === 0
+              }
               className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Assign Selected ({selectedContacts.length}) to Campaign
@@ -1249,8 +1216,12 @@ export default function ContactsPage() {
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-3">
                   {selectedContacts.length > 0
-                    ? `Assign ${selectedContacts.length} selected contact${selectedContacts.length !== 1 ? "s" : ""} to a campaign:`
-                    : `Assign all ${totalContacts} filtered contact${totalContacts !== 1 ? "s" : ""} to a campaign:`}
+                    ? `Assign ${selectedContacts.length} selected contact${
+                        selectedContacts.length !== 1 ? "s" : ""
+                      } to a campaign:`
+                    : `Assign all ${totalContacts} filtered contact${
+                        totalContacts !== 1 ? "s" : ""
+                      } to a campaign:`}
                 </p>
 
                 <div className="space-y-2">
