@@ -6,20 +6,20 @@ import { useEffect, useState } from "react";
 interface ContactFormData {
   id: string;
   phone_number: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  company: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  date_of_birth: string;
-  job_type: string;
-  expires: string;
-  license_expiration_date: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  company?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  date_of_birth?: string;
+  job_type?: string;
+  expires?: string;
+  license_expiration_date?: string;
   status: string;
-  others: string;
+  others?: string;
   group_id?: string;
 }
 

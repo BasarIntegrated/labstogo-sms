@@ -68,6 +68,9 @@ export default function ContactsPage() {
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [showAssignGroupModal, setShowAssignGroupModal] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
+  const [assignGroupMode, setAssignGroupMode] = useState<"selected" | "all">(
+    "selected"
+  );
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(0);
@@ -360,7 +363,7 @@ export default function ContactsPage() {
 
   // Select all contacts on current page
   const selectAllContacts = () => {
-    const allIds = filteredContacts.map((contact) => contact.id);
+    const allIds = filteredContacts.map((contact: Contact) => contact.id);
     setSelectedContacts(allIds);
   };
 
@@ -371,19 +374,61 @@ export default function ContactsPage() {
 
   // Handle bulk assign to group
   const handleAssignToGroup = async () => {
-    if (!selectedCampaignId || selectedContacts.length === 0) {
+    if (!selectedCampaignId) {
       return;
     }
 
     setIsAssigning(true);
     try {
+      let contactIds = [];
+
+      if (assignGroupMode === "selected" && selectedContacts.length > 0) {
+        // Use selected contacts
+        contactIds = selectedContacts;
+        console.log(
+          `Assigning ${contactIds.length} selected contacts to group ${selectedCampaignId}`
+        );
+      } else if (assignGroupMode === "all") {
+        // Fetch ALL contacts that match current filters
+        const params = new URLSearchParams();
+        params.append("limit", "10000");
+        params.append("page", "0");
+
+        if (searchTerm) params.append("search", searchTerm);
+        if (selectedStatus !== "all") params.append("status", selectedStatus);
+        if (selectedGroup !== "all") params.append("group", selectedGroup);
+        if (expiresFrom) params.append("expires_from", expiresFrom);
+        if (expiresTo) params.append("expires_to", expiresTo);
+        params.append("sortBy", sortBy);
+        params.append("sortOrder", sortOrder);
+
+        console.log("Fetching all filtered contacts for group assignment...");
+        const allContactsResponse = await fetch(`/api/contacts?${params}`);
+
+        if (!allContactsResponse.ok) {
+          throw new Error("Failed to fetch all contacts for assignment");
+        }
+
+        const allContactsData = await allContactsResponse.json();
+        const allFilteredContacts = allContactsData.contacts || [];
+        contactIds = allFilteredContacts.map((contact: any) => contact.id);
+
+        console.log(
+          `Assigning ${contactIds.length} filtered contacts to group ${selectedCampaignId}`
+        );
+      } else {
+        alert("No contacts selected");
+        setIsAssigning(false);
+        return;
+      }
+
       const response = await fetch("/api/contacts/bulk-assign", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contactIds: selectedContacts,
+          contactIds,
           groupId: selectedCampaignId,
         }),
       });
@@ -393,12 +438,19 @@ export default function ContactsPage() {
       }
 
       // Refresh contacts and clear selection
+      const assignType =
+        assignGroupMode === "selected" ? "selected" : "filtered";
+      alert(
+        `Successfully assigned ${contactIds.length} ${assignType} contacts to group!`
+      );
+
       if (refetchContacts) {
         refetchContacts();
       }
       setSelectedContacts([]);
       setShowAssignGroupModal(false);
       setSelectedCampaignId("");
+      setAssignGroupMode("selected");
     } catch (error) {
       console.error("Error assigning contacts to group:", error);
       alert("Failed to assign contacts to group");
@@ -408,7 +460,8 @@ export default function ContactsPage() {
   };
 
   // Open assign group modal
-  const openAssignGroupModal = () => {
+  const openAssignGroupModal = (mode: "selected" | "all" = "selected") => {
+    setAssignGroupMode(mode);
     fetchGroups();
     setShowAssignGroupModal(true);
   };
@@ -830,7 +883,7 @@ export default function ContactsPage() {
             <button
               onClick={() => {
                 setSelectedCampaignId("");
-                openAssignGroupModal();
+                openAssignGroupModal("all");
               }}
               disabled={groups.length === 0}
               className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -840,13 +893,13 @@ export default function ContactsPage() {
             <button
               onClick={() => {
                 if (selectedContacts.length > 0) {
-                  openAssignGroupModal();
+                  openAssignGroupModal("selected");
                 }
               }}
               disabled={selectedContacts.length === 0 || groups.length === 0}
               className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Assign Selected ({selectedContacts.length})
+              Assign Selected ({selectedContacts.length}) To Group
             </button>
           </div>
         </div>
@@ -1367,8 +1420,9 @@ export default function ContactsPage() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-3">
-                  Assign {selectedContacts.length} selected contact
-                  {selectedContacts.length !== 1 ? "s" : ""} to a group:
+                  {assignGroupMode === "selected"
+                    ? `Assign ${selectedContacts.length} selected contact${selectedContacts.length !== 1 ? "s" : ""} to a group:`
+                    : `Assign all filtered contacts to a group:`}
                 </p>
 
                 <div className="space-y-2">
