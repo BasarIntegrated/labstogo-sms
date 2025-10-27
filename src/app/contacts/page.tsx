@@ -604,6 +604,22 @@ export default function ContactsPage() {
               <Plus className="w-4 h-4 mr-2" />
               Add Contact
             </button>
+            <button
+              onClick={() => setShowCampaignModal(true)}
+              disabled={campaignsLoading || campaigns.length === 0}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              {campaignsLoading ? "Loading..." : "Assign Campaign"}
+            </button>
+            <button
+              onClick={openAssignGroupModal}
+              disabled={selectedContacts.length === 0}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Tag className="w-4 h-4 mr-2" />
+              Assign Group ({selectedContacts.length})
+            </button>
           </div>
         </div>
       </div>
@@ -661,7 +677,7 @@ export default function ContactsPage() {
           </h3>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -719,31 +735,6 @@ export default function ContactsPage() {
                   </option>
                 ))}
               </select>
-            </div>
-
-            {/* Bulk Actions */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bulk Actions
-              </label>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowCampaignModal(true)}
-                  disabled={campaignsLoading || campaigns.length === 0}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  {campaignsLoading ? "Loading..." : "Assign to Campaign"}
-                </button>
-                <button
-                  onClick={openAssignGroupModal}
-                  disabled={selectedContacts.length === 0}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Tag className="w-4 h-4 mr-2" />
-                  Assign to Group ({selectedContacts.length})
-                </button>
-              </div>
             </div>
           </div>
 
@@ -900,7 +891,9 @@ export default function ContactsPage() {
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
                           {(() => {
-                            const group = groups.find((g) => g.id === contact.group_id);
+                            const group = groups.find(
+                              (g) => g.id === contact.group_id
+                            );
                             return group ? group.name : "-";
                           })()}
                         </td>
