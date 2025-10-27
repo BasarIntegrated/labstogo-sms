@@ -59,11 +59,15 @@ export default function ContactsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedGroup, setSelectedGroup] = useState("all");
   const [expiresFrom, setExpiresFrom] = useState("");
   const [expiresTo, setExpiresTo] = useState("");
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const [showAssignGroupModal, setShowAssignGroupModal] = useState(false);
+  const [groups, setGroups] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(0);
@@ -85,6 +89,7 @@ export default function ContactsPage() {
       "contacts",
       searchTerm,
       selectedStatus,
+      selectedGroup,
       expiresFrom,
       expiresTo,
       sortBy,
@@ -101,6 +106,7 @@ export default function ContactsPage() {
 
         if (searchTerm) params.append("search", searchTerm);
         if (selectedStatus !== "all") params.append("status", selectedStatus);
+        if (selectedGroup !== "all") params.append("group", selectedGroup);
         if (expiresFrom) params.append("expires_from", expiresFrom);
         if (expiresTo) params.append("expires_to", expiresTo);
         params.append("sortBy", sortBy);
@@ -128,6 +134,26 @@ export default function ContactsPage() {
     dataLength: contactsData?.contacts?.length || 0,
     total: contactsData?.total || 0,
     error: queryError,
+  });
+
+  // Get available groups for filter
+  const { data: groupsData, isLoading: groupsLoading } = useQuery({
+    queryKey: ["groups"],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/groups?limit=1000");
+        if (!response.ok) {
+          throw new Error("Failed to fetch groups");
+        }
+        const data = await response.json();
+        setGroups(data.groups || []);
+        return data.groups || [];
+      } catch (error) {
+        console.error("Error fetching groups:", error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Get available campaigns for assignment
@@ -308,6 +334,83 @@ export default function ContactsPage() {
   const openDeleteConfirm = (contactId: string) => {
     setContactToDelete(contactId);
     setShowDeleteConfirm(true);
+  };
+
+  // Fetch groups for assignment
+  const fetchGroups = async () => {
+    try {
+      const response = await fetch("/api/groups");
+      if (response.ok) {
+        const data = await response.json();
+        setGroups(data.groups || []);
+      }
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    }
+  };
+
+  // Handle contact selection toggle
+  const toggleContactSelection = (contactId: string) => {
+    setSelectedContacts((prev) =>
+      prev.includes(contactId)
+        ? prev.filter((id) => id !== contactId)
+        : [...prev, contactId]
+    );
+  };
+
+  // Select all contacts on current page
+  const selectAllContacts = () => {
+    const allIds = filteredContacts.map((contact) => contact.id);
+    setSelectedContacts(allIds);
+  };
+
+  // Deselect all contacts
+  const deselectAllContacts = () => {
+    setSelectedContacts([]);
+  };
+
+  // Handle bulk assign to group
+  const handleAssignToGroup = async () => {
+    if (!selectedCampaignId || selectedContacts.length === 0) {
+      return;
+    }
+
+    setIsAssigning(true);
+    try {
+      const response = await fetch("/api/contacts/bulk-assign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contactIds: selectedContacts,
+          groupId: selectedCampaignId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to assign contacts to group");
+      }
+
+      // Refresh contacts and clear selection
+      if (refetchContacts) {
+        refetchContacts();
+      }
+      setSelectedContacts([]);
+      setShowAssignGroupModal(false);
+      setSelectedCampaignId("");
+    } catch (error) {
+      console.error("Error assigning contacts to group:", error);
+      alert("Failed to assign contacts to group");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  // Open assign group modal
+  const openAssignGroupModal = () => {
+    fetchGroups();
+    setShowAssignGroupModal(true);
   };
 
   const handleAssignToCampaign = async () => {
@@ -596,19 +699,51 @@ export default function ContactsPage() {
               </select>
             </div>
 
-            {/* Campaign Assignment */}
+            {/* Group Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Group
+              </label>
+              <select
+                value={selectedGroup}
+                onChange={(e) => {
+                  setSelectedGroup(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Groups</option>
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Bulk Actions */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Bulk Actions
               </label>
-              <button
-                onClick={() => setShowCampaignModal(true)}
-                disabled={campaignsLoading || campaigns.length === 0}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                {campaignsLoading ? "Loading..." : "Assign to Campaign"}
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowCampaignModal(true)}
+                  disabled={campaignsLoading || campaigns.length === 0}
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  {campaignsLoading ? "Loading..." : "Assign to Campaign"}
+                </button>
+                <button
+                  onClick={openAssignGroupModal}
+                  disabled={selectedContacts.length === 0}
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Tag className="w-4 h-4 mr-2" />
+                  Assign to Group ({selectedContacts.length})
+                </button>
+              </div>
             </div>
           </div>
 
@@ -684,11 +819,29 @@ export default function ContactsPage() {
             <table className="min-w-max divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredContacts.length > 0 &&
+                        selectedContacts.length === filteredContacts.length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          selectAllContacts();
+                        } else {
+                          deselectAllContacts();
+                        }
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </th>
                   {renderSortableHeader("first_name", "First Name")}
                   {renderSortableHeader("last_name", "Last Name")}
                   {renderSortableHeader("company", "Company")}
                   {renderSortableHeader("phone_number", "Phone")}
                   {renderSortableHeader("email", "Email")}
+                  {renderSortableHeader("group", "Group")}
                   {renderSortableHeader("job_type", "Job Type")}
                   {renderSortableHeader("expires", "Expires")}
                   {renderSortableHeader("address", "Address")}
@@ -705,7 +858,7 @@ export default function ContactsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredContacts.length === 0 ? (
                   <tr>
-                    <td colSpan={14} className="px-6 py-4 text-center">
+                    <td colSpan={16} className="px-6 py-4 text-center">
                       <div className="text-gray-500">
                         <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                         <p>No contacts found</p>
@@ -722,6 +875,14 @@ export default function ContactsPage() {
                     );
                     return (
                       <tr key={contact.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm">
+                          <input
+                            type="checkbox"
+                            checked={selectedContacts.includes(contact.id)}
+                            onChange={() => toggleContactSelection(contact.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                        </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
                           {contact.first_name || ""}
                         </td>
@@ -736,6 +897,12 @@ export default function ContactsPage() {
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[200px]">
                           {contact.email || ""}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
+                          {(() => {
+                            const group = groups.find((g) => g.id === contact.group_id);
+                            return group ? group.name : "-";
+                          })()}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[100px]">
                           {contact.job_type || ""}
@@ -1103,6 +1270,117 @@ export default function ContactsPage() {
         isOpen={showGroupModal}
         onClose={() => setShowGroupModal(false)}
       />
+
+      {/* Assign to Group Modal */}
+      {showAssignGroupModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Assign to Group
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAssignGroupModal(false);
+                    setSelectedCampaignId("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <span className="sr-only">Close</span>
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-3">
+                  Assign {selectedContacts.length} selected contact
+                  {selectedContacts.length !== 1 ? "s" : ""} to a group:
+                </p>
+
+                <div className="space-y-2">
+                  {groups.length > 0 ? (
+                    groups.map((group: any) => (
+                      <label
+                        key={group.id}
+                        className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="group"
+                          value={group.id}
+                          checked={selectedCampaignId === group.id}
+                          onChange={(e) =>
+                            setSelectedCampaignId(e.target.value)
+                          }
+                          className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                        />
+                        <div className="ml-3">
+                          <div className="flex items-center">
+                            <div
+                              className="w-3 h-3 rounded-full mr-2"
+                              style={{ backgroundColor: group.color }}
+                            />
+                            <div className="text-sm font-medium text-gray-900">
+                              {group.name}
+                            </div>
+                          </div>
+                          {group.description && (
+                            <div className="text-sm text-gray-500">
+                              {group.description}
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No groups available. Create a group first.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowAssignGroupModal(false);
+                    setSelectedCampaignId("");
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAssignToGroup}
+                  disabled={
+                    groups.length === 0 || !selectedCampaignId || isAssigning
+                  }
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAssigning
+                    ? "Assigning..."
+                    : `Assign ${selectedContacts.length} Contact${
+                        selectedContacts.length !== 1 ? "s" : ""
+                      }`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
