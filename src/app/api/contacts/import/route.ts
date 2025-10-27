@@ -603,7 +603,8 @@ async function processContactImport(
           const updatedPatient = await updateExistingPatient(
             supabaseAdmin,
             existingPatient.id,
-            record
+            record,
+            groupId
           );
           if (updatedPatient) {
             updatedPatients.push(updatedPatient);
@@ -615,7 +616,11 @@ async function processContactImport(
       } else {
         console.log(`🆕 Row ${rowNumber}: Creating new contact`);
         // Create new patient
-        const newPatient = await createNewPatient(supabaseAdmin, record, groupId);
+        const newPatient = await createNewPatient(
+          supabaseAdmin,
+          record,
+          groupId
+        );
         if (newPatient) {
           importedPatients.push(newPatient);
           if (phoneNumber) {
@@ -824,7 +829,8 @@ async function createNewPatient(
 async function updateExistingPatient(
   supabase: typeof supabaseAdmin,
   patientId: string,
-  record: any
+  record: any,
+  groupId?: string | null
 ): Promise<Patient | null> {
   try {
     const updateData: any = {
@@ -834,6 +840,11 @@ async function updateExistingPatient(
     if (record.first_name) updateData.first_name = record.first_name.trim();
     if (record.last_name) updateData.last_name = record.last_name.trim();
     if (record.email) updateData.email = record.email.trim();
+
+    // Add group_id if provided
+    if (groupId) {
+      updateData.group_id = groupId;
+    }
 
     const { data, error } = await supabase
       .from("contacts")
