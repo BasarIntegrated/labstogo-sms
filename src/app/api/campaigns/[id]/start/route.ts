@@ -63,18 +63,27 @@ export async function POST(
     // Get campaign recipients and process them
     const { data: fullCampaign, error: campaignError } = await supabaseAdmin
       .from("campaigns")
-      .select("recipient_contacts, message_template, campaign_type, name")
+      .select("*")
       .eq("id", campaignId)
       .single();
 
-    if (campaignError || !fullCampaign) {
+    if (campaignError) {
       console.error("Error fetching campaign details:", campaignError);
       return NextResponse.json(
         {
           error: "Failed to fetch campaign details",
           details: campaignError?.message,
+          code: campaignError?.code,
+          hint: campaignError?.hint,
         },
         { status: 500 }
+      );
+    }
+
+    if (!fullCampaign) {
+      return NextResponse.json(
+        { error: "Campaign not found" },
+        { status: 404 }
       );
     }
 
@@ -171,10 +180,10 @@ export async function POST(
     console.error("Campaign start error:", error);
     console.error("Error stack:", error.stack);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to start campaign",
         details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );
