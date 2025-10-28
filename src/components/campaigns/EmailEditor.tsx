@@ -12,18 +12,35 @@ export default function EmailEditorComponent({ content, onChange }: EmailEditorP
   const emailEditorRef = useRef<any>(null);
 
   useEffect(() => {
-    if (emailEditorRef.current) {
+    if (emailEditorRef.current && content) {
       // Load existing content if available
-      if (content) {
-        try {
-          emailEditorRef.current.loadDesign(JSON.parse(content));
-        } catch {
-          // If content is not JSON, try to import as HTML
-          emailEditorRef.current.importHTML(content);
-        }
+      try {
+        const design = typeof content === 'string' ? JSON.parse(content) : content;
+        emailEditorRef.current.editor.loadDesign(design);
+      } catch (error) {
+        console.error("Failed to load design:", error);
+        // Create a default design with HTML content
+        emailEditorRef.current.editor.loadDesign({
+          body: {
+            rows: [
+              {
+                columns: [
+                  {
+                    contents: [
+                      {
+                        type: 'text',
+                        value: content,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        });
       }
     }
-  }, []);
+  }, [content]);
 
   const onReady = () => {
     // Editor is ready
