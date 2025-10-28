@@ -75,7 +75,7 @@ export default function ContactsPage() {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize] = useState(10); // Show 10 contacts per page
+  const [pageSize, setPageSize] = useState(10); // Show 10 contacts per page
   const [previousContacts, setPreviousContacts] = useState<any[]>([]);
   // const [showCreateModal, setShowCreateModal] = useState(false);
   // const [showUploadModal, setShowUploadModal] = useState(false);
@@ -1077,12 +1077,32 @@ export default function ContactsPage() {
           </button>
         </div>
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
+          <div className="flex items-center gap-4">
             <p className="text-sm text-gray-700">
               Showing <span className="font-medium">{startIndex}</span> to{" "}
               <span className="font-medium">{endIndex}</span> of{" "}
               <span className="font-medium">{totalContacts}</span> results
             </p>
+            <div className="flex items-center gap-2">
+              <label htmlFor="page-size" className="text-sm text-gray-700">
+                Show:
+              </label>
+              <select
+                id="page-size"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(0); // Reset to first page when changing page size
+                }}
+                className="rounded-md border border-gray-300 bg-white py-1 px-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+            </div>
           </div>
           <div>
             <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
