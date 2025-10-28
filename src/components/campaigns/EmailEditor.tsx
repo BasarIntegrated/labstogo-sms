@@ -13,6 +13,7 @@ export default function EmailEditor({ content, onChange }: EmailEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
     content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
