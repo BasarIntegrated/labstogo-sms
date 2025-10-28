@@ -5,10 +5,10 @@ import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-// Dynamically import Monaco Editor to avoid SSR issues
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+// Dynamically import EmailEditor to avoid SSR issues
+const EmailEditor = dynamic(() => import("./EmailEditor"), {
   ssr: false,
-  loading: () => <div className="h-64 bg-gray-50 animate-pulse" />,
+  loading: () => <div className="h-64 bg-gray-50 animate-pulse border border-gray-300 rounded" />,
 });
 
 interface CampaignComposerProps {
@@ -184,26 +184,10 @@ export default function CampaignComposer({
                     : "Message Template *"}
                 </label>
                 {formData.campaign_type === "email" ? (
-                  <div className="border border-gray-300 rounded-md overflow-hidden">
-                    <MonacoEditor
-                      height="400px"
-                      language="html"
-                      value={formData.message_template}
-                      onChange={(value) =>
-                        handleInputChange("message_template", value || "")
-                      }
-                      theme="vs-light"
-                      options={{
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        fontSize: 14,
-                        wordWrap: "on",
-                        formatOnPaste: true,
-                        formatOnType: true,
-                        tabSize: 2,
-                      }}
-                    />
-                  </div>
+                  <EmailEditor
+                    content={formData.message_template}
+                    onChange={(value) => handleInputChange("message_template", value)}
+                  />
                 ) : (
                   <textarea
                     value={formData.message_template}
@@ -216,7 +200,9 @@ export default function CampaignComposer({
                   />
                 )}
                 <div className="mt-2 text-sm text-gray-500">
-                  <p className="mb-1">Available merge tags (click to insert):</p>
+                  <p className="mb-1">
+                    Available merge tags (click to insert):
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {availableMergeTags.map((tag) => (
                       <span

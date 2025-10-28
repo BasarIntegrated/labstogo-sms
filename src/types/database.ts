@@ -214,7 +214,7 @@ export interface Campaign {
   description?: string;
   message_template: string;
   template_id?: string;
-  campaign_type: "general" | "appointment_reminder" | "custom";
+  campaign_type: "general" | "appointment_reminder" | "custom" | "email";
   status:
     | "draft"
     | "scheduled"
