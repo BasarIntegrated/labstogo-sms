@@ -26,7 +26,7 @@ export interface TwilioConfig {
 
 class TwilioService {
   private config: TwilioConfig | null = null;
-  private twilioClient: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+  private twilioClient: any = null;
 
   constructor() {
     this.initializeTwilio();

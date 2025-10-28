@@ -194,23 +194,23 @@ export const ContactImport: React.FC<ContactImportProps> = ({
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-gray-900">
           Import Contacts
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-600">
           Upload a CSV file to import contacts in bulk
         </p>
       </div>
 
       {/* File Upload Area */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6">
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
               isDragActive
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300 hover:border-gray-400"
             }`}
           >
             <input {...getInputProps()} />
@@ -226,18 +226,18 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                 </svg>
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-900 dark:text-white">
+                <p className="text-lg font-medium text-gray-900">
                   {isDragActive
                     ? "Drop the file here"
                     : "Drag & drop a CSV file here"}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600">
                   or click to browse files
                 </p>
               </div>
               {selectedFile && (
-                <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-sm text-green-800 dark:text-green-400">
+                <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                  <p className="text-sm text-green-800">
                     Selected: {selectedFile.name} (
                     {(selectedFile.size / 1024).toFixed(1)} KB)
                   </p>
@@ -250,20 +250,20 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
       {/* Group Selection */}
       {groups.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Assign to Group (Optional)
             </h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Group
               </label>
-              <select
-                value={selectedGroup}
-                onChange={(e) => handleGroupChange(e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-              >
+                <select
+                  value={selectedGroup}
+                  onChange={(e) => handleGroupChange(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                 <option value="">No Group (Default)</option>
                 {groups.map((group) => (
                   <option key={group.id} value={group.id}>
@@ -272,7 +272,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                 ))}
               </select>
               {selectedGroup && (
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-sm text-gray-600">
                   All imported contacts will be assigned to the selected group.
                 </p>
               )}
@@ -284,9 +284,9 @@ export const ContactImport: React.FC<ContactImportProps> = ({
       {/* Import Options - Hidden, using defaults */}
       {/* 
       {selectedFile && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Import Options
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -303,7 +303,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                     }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-gray-700">
                     Skip duplicate phone numbers
                   </span>
                 </label>
@@ -320,7 +320,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                     }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-gray-700">
                     Update existing patients
                   </span>
                 </label>
@@ -337,7 +337,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                     }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-gray-700">
                     Validate phone numbers
                   </span>
                 </label>
@@ -354,14 +354,14 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                     }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-gray-700">
                     Validate email addresses
                   </span>
                 </label>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Batch Size
                 </label>
                 <select
@@ -372,7 +372,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                       batchSize: parseInt(e.target.value),
                     })
                   }
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value={50}>50 records</option>
                   <option value={100}>100 records</option>
@@ -388,21 +388,21 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
       {/* Progress */}
       {progress.stage !== "idle" && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-gray-700">
                 {progress.stage === "processing" &&
                 progress.current &&
                 progress.total
                   ? `Processing ${progress.current} of ${progress.total} contacts...`
                   : progress.message}
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 hidden">
+              <span className="text-sm text-gray-500 hidden">
                 {progress.progress}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 ">
+            <div className="w-full bg-gray-200 rounded-full h-2 ">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
                   progress.stage === "error"
@@ -417,7 +417,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
             {progress.stage === "processing" &&
               progress.current &&
               progress.total && (
-                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-2 text-xs text-gray-500">
                   {progress.current} of {progress.total} contacts processed
                 </div>
               )}
@@ -427,11 +427,11 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-800 dark:text-red-400 mb-2">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-red-800 mb-2">
             Import Errors:
           </h4>
-          <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+          <ul className="text-sm text-red-700 space-y-1">
             {errors.map((error, index) => (
               <li key={index}>• {error}</li>
             ))}
@@ -442,11 +442,11 @@ export const ContactImport: React.FC<ContactImportProps> = ({
       {/* Success Modal */}
       {importResult && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full">
                 <svg
-                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  className="w-6 h-6 text-green-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -460,11 +460,11 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                 </svg>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
                 🎉 Import Successful!
               </h3>
 
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
+              <p className="text-sm text-gray-600 text-center mb-6">
                 {importResult?.summary?.newPatients > 0 &&
                 importResult?.summary?.updatedPatients > 0
                   ? `Successfully imported ${importResult?.summary?.newPatients} new contacts and updated ${importResult?.summary?.updatedPatients} existing contacts.`
@@ -476,19 +476,19 @@ export const ContactImport: React.FC<ContactImportProps> = ({
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-xl font-bold text-green-600">
                     {importResult?.summary?.newPatients || 0}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600">
                     New Contacts
                   </div>
                 </div>
-                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-xl font-bold text-blue-600">
                     {importResult?.summary?.updatedPatients || 0}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600">
                     Updated
                   </div>
                 </div>
@@ -496,8 +496,8 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
               {(importResult?.summary?.skippedPatients > 0 ||
                 importResult?.summary?.errorCount > 0) && (
-                <div className="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                  <div className="text-sm text-yellow-800 dark:text-yellow-400">
+                <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
+                  <div className="text-sm text-yellow-800">
                     {importResult?.summary?.skippedPatients > 0 && (
                       <div>
                         {importResult?.summary?.skippedPatients} contacts
@@ -541,42 +541,42 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
       {/* Import Results */}
       {importResult && progress.stage !== "completed" && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Import Results
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-2xl font-bold text-green-600">
                   {importResult?.summary?.newPatients || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   New Patients
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-2xl font-bold text-blue-600">
                   {importResult?.summary?.updatedPatients || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   Updated
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                <div className="text-2xl font-bold text-yellow-600">
                   {importResult?.summary?.skippedPatients || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   Skipped
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                <div className="text-2xl font-bold text-red-600">
                   {importResult?.summary?.errorCount || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   Errors
                 </div>
               </div>
@@ -584,20 +584,20 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
             {importResult.errors.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
                   Validation Errors:
                 </h4>
                 <div className="max-h-40 overflow-y-auto">
                   {importResult.errors.slice(0, 10).map((error, index) => (
                     <div
                       key={index}
-                      className="text-xs text-red-600 dark:text-red-400 mb-1"
+                      className="text-xs text-red-600 mb-1"
                     >
                       Row {error.row}: {error.message}
                     </div>
                   ))}
                   {importResult.errors.length > 10 && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500">
                       ... and {importResult.errors.length - 10} more errors
                     </div>
                   )}
@@ -607,7 +607,7 @@ export const ContactImport: React.FC<ContactImportProps> = ({
 
             {importResult.duplicates.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
                   Duplicates Found:
                 </h4>
                 <div className="max-h-40 overflow-y-auto">
@@ -616,14 +616,14 @@ export const ContactImport: React.FC<ContactImportProps> = ({
                     .map((duplicate, index) => (
                       <div
                         key={index}
-                        className="text-xs text-yellow-600 dark:text-yellow-400 mb-1"
+                        className="text-xs text-yellow-600 mb-1"
                       >
                         Row {duplicate.row}: {duplicate.phoneNumber} -{" "}
                         {duplicate.action}
                       </div>
                     ))}
                   {importResult.duplicates.length > 10 && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500">
                       ... and {importResult.duplicates.length - 10} more
                       duplicates
                     </div>

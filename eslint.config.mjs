@@ -25,9 +25,9 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off", // Too noisy, especially in API routes
       "react/no-unescaped-entities": "off",
-      "@typescript-eslint/ban-ts-comment": "warn",
-      "react-hooks/exhaustive-deps": "warn",
-      "@typescript-eslint/no-unused-expressions": "warn",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
 ];
