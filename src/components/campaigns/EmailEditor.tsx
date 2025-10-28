@@ -110,6 +110,17 @@ export default function EmailEditor({ content, onChange }: EmailEditorProps) {
         
         <button
           type="button"
+          onClick={() => setShowImageInput(!showImageInput)}
+          className="p-2 rounded hover:bg-gray-200"
+          title="Insert Image"
+        >
+          <ImageIcon className="w-4 h-4" />
+        </button>
+        
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+        
+        <button
+          type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`p-2 rounded hover:bg-gray-200 ${
             editor.isActive("bulletList") ? "bg-gray-300" : ""
