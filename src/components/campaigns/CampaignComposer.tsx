@@ -3,6 +3,13 @@
 import { Campaign } from "@/types/database";
 import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import Monaco Editor to avoid SSR issues
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-50 animate-pulse" />,
+});
 
 interface CampaignComposerProps {
   campaign?: Campaign;
@@ -82,6 +89,11 @@ export default function CampaignComposer({
     }));
   };
 
+  const handleInsertMergeTag = (tag: string) => {
+    const currentText = formData.message_template;
+    handleInputChange("message_template", currentText + tag);
+  };
+
   const handleSave = () => {
     if (!formData.name.trim() || !formData.message_template.trim()) {
       alert("Please fill in all required fields");
@@ -130,6 +142,26 @@ export default function CampaignComposer({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Campaign Type *
+                  </label>
+                  <select
+                    value={formData.campaign_type}
+                    onChange={(e) =>
+                      handleInputChange("campaign_type", e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="general">SMS Campaign</option>
+                    <option value="appointment_reminder">
+                      Appointment Reminder (SMS)
+                    </option>
+                    <option value="custom">Custom (SMS)</option>
+                    <option value="email">Email Campaign</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                   </label>
                   <textarea
@@ -147,46 +179,50 @@ export default function CampaignComposer({
               {/* Message Template Editor */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message Template *
+                  {formData.campaign_type === "email"
+                    ? "Email Content (HTML) *"
+                    : "Message Template *"}
                 </label>
-                <textarea
-                  value={formData.message_template}
-                  onChange={(e) =>
-                    handleInputChange("message_template", e.target.value)
-                  }
-                  placeholder="Enter your message template here. Use {first_name}, {last_name}, {company_name}, etc. for personalization."
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
+                {formData.campaign_type === "email" ? (
+                  <div className="border border-gray-300 rounded-md overflow-hidden">
+                    <MonacoEditor
+                      height="400px"
+                      language="html"
+                      value={formData.message_template}
+                      onChange={(value) =>
+                        handleInputChange("message_template", value || "")
+                      }
+                      theme="vs-light"
+                      options={{
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        fontSize: 14,
+                        wordWrap: "on",
+                        formatOnPaste: true,
+                        formatOnType: true,
+                        tabSize: 2,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <textarea
+                    value={formData.message_template}
+                    onChange={(e) =>
+                      handleInputChange("message_template", e.target.value)
+                    }
+                    placeholder="Enter your message template here. Use {first_name}, {last_name}, {company_name}, etc. for personalization."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                )}
                 <div className="mt-2 text-sm text-gray-500">
-                  <p className="mb-1">Available merge tags:</p>
+                  <p className="mb-1">Available merge tags (click to insert):</p>
                   <div className="flex flex-wrap gap-2">
                     {availableMergeTags.map((tag) => (
                       <span
                         key={tag}
                         className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs cursor-pointer hover:bg-gray-200"
-                        onClick={() => {
-                          const textarea = document.querySelector(
-                            'textarea[placeholder*="Enter your message template"]'
-                          ) as HTMLTextAreaElement;
-                          if (textarea) {
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            const text = textarea.value;
-                            const before = text.substring(0, start);
-                            const after = text.substring(end, text.length);
-                            const newText = before + tag + after;
-                            handleInputChange("message_template", newText);
-                            // Set cursor position after the inserted tag
-                            setTimeout(() => {
-                              textarea.focus();
-                              textarea.setSelectionRange(
-                                start + tag.length,
-                                start + tag.length
-                              );
-                            }, 0);
-                          }
-                        }}
+                        onClick={() => handleInsertMergeTag(tag)}
                       >
                         {tag}
                       </span>
