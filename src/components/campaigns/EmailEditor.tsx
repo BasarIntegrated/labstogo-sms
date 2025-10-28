@@ -1,7 +1,7 @@
 "use client";
 
 import EmailEditor from "react-email-editor";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface EmailEditorProps {
   content: string;
@@ -10,40 +10,48 @@ interface EmailEditorProps {
 
 export default function EmailEditorComponent({ content, onChange }: EmailEditorProps) {
   const emailEditorRef = useRef<any>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (emailEditorRef.current && content) {
-      // Load existing content if available
-      try {
-        const design = typeof content === 'string' ? JSON.parse(content) : content;
-        emailEditorRef.current.editor.loadDesign(design);
-      } catch (error) {
-        console.error("Failed to load design:", error);
-        // Create a default design with HTML content
-        emailEditorRef.current.editor.loadDesign({
-          body: {
-            rows: [
-              {
-                columns: [
-                  {
-                    contents: [
-                      {
-                        type: 'text',
-                        value: content,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        });
+    if (isReady && emailEditorRef.current && content) {
+      // Check if content is valid JSON design or HTML/text
+      let design;
+      
+      // Try to detect if content is JSON design
+      if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
+        try {
+          design = JSON.parse(content);
+          emailEditorRef.current.editor.loadDesign(design);
+          return;
+        } catch (e) {
+          // Not valid JSON, treat as HTML/text
+        }
       }
+      
+      // Content is HTML or plain text, convert to design
+      emailEditorRef.current.editor.loadDesign({
+        body: {
+          rows: [
+            {
+              columns: [
+                {
+                  contents: [
+                    {
+                      type: 'text',
+                      value: content,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      });
     }
-  }, [content]);
+  }, [content, isReady]);
 
   const onReady = () => {
-    // Editor is ready
+    setIsReady(true);
   };
 
   const exportHtml = () => {
