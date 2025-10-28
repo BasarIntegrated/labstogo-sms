@@ -189,6 +189,7 @@ export async function POST(request: NextRequest) {
     const options = JSON.parse(
       (formData.get("options") as string) || "{}"
     ) as Partial<ImportOptions>;
+    const groupId = formData.get("groupId") as string | null;
     const sessionId =
       (formData.get("sessionId") as string) ||
       `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -245,7 +246,8 @@ export async function POST(request: NextRequest) {
     const result = await processContactImport(
       records,
       importOptions,
-      sessionId
+      sessionId,
+      groupId
     );
 
     // Complete the progress tracking
@@ -304,7 +306,8 @@ export async function POST(request: NextRequest) {
 async function processContactImport(
   records: any[],
   options: ImportOptions,
-  sessionId: string
+  sessionId: string,
+  groupId?: string | null
 ): Promise<ImportResult> {
   if (!supabaseAdmin) {
     throw new Error("Supabase admin client not configured");
@@ -600,7 +603,8 @@ async function processContactImport(
           const updatedPatient = await updateExistingPatient(
             supabaseAdmin,
             existingPatient.id,
-            record
+            record,
+            groupId
           );
           if (updatedPatient) {
             updatedPatients.push(updatedPatient);
@@ -612,7 +616,7 @@ async function processContactImport(
       } else {
         console.log(`🆕 Row ${rowNumber}: Creating new contact`);
         // Create new patient
-        const newPatient = await createNewPatient(supabaseAdmin, record);
+        const newPatient = await createNewPatient(supabaseAdmin, record, groupId);
         if (newPatient) {
           importedPatients.push(newPatient);
           if (phoneNumber) {
@@ -756,7 +760,8 @@ function safeStringTrim(value: any): string | null {
 
 async function createNewPatient(
   supabase: typeof supabaseAdmin,
-  record: any
+  record: any,
+  groupId?: string | null
 ): Promise<Patient | null> {
   try {
     // Ensure we have a valid phone number - this should have been validated earlier
@@ -791,6 +796,11 @@ async function createNewPatient(
       updated_at: new Date().toISOString(),
     };
 
+    // Add group_id if provided
+    if (groupId) {
+      (patientData as any).group_id = groupId;
+    }
+
     const { data, error } = await supabase
       .from("contacts")
       .insert(patientData)
@@ -815,7 +825,8 @@ async function createNewPatient(
 async function updateExistingPatient(
   supabase: typeof supabaseAdmin,
   patientId: string,
-  record: any
+  record: any,
+  groupId?: string | null
 ): Promise<Patient | null> {
   try {
     const updateData: any = {
@@ -825,6 +836,11 @@ async function updateExistingPatient(
     if (record.first_name) updateData.first_name = record.first_name.trim();
     if (record.last_name) updateData.last_name = record.last_name.trim();
     if (record.email) updateData.email = record.email.trim();
+
+    // Add group_id if provided
+    if (groupId) {
+      updateData.group_id = groupId;
+    }
 
     const { data, error } = await supabase
       .from("contacts")
