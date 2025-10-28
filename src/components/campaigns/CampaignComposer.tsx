@@ -61,6 +61,7 @@ export default function CampaignComposer({
 
   useEffect(() => {
     if (campaign) {
+      console.log("Loading campaign for edit:", campaign);
       setFormData(campaign);
     } else {
       setFormData({
