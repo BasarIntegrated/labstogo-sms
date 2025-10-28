@@ -63,28 +63,41 @@ export async function POST(
     // Get campaign recipients and process them
     const { data: fullCampaign, error: campaignError } = await supabaseAdmin
       .from("campaigns")
-      .select("recipient_contacts, message_template")
+      .select("recipient_contacts, message_template, campaign_type, name")
       .eq("id", campaignId)
       .single();
 
     if (campaignError || !fullCampaign) {
       console.error("Error fetching campaign details:", campaignError);
       return NextResponse.json(
-        { error: "Failed to fetch campaign details" },
+        { error: "Failed to fetch campaign details", details: campaignError?.message },
         { status: 500 }
       );
     }
 
+    console.log("Full campaign data:", JSON.stringify(fullCampaign, null, 2));
+
     let processedCount = 0;
     let errorCount = 0;
 
+    // Handle recipient_contacts - it might be an array or JSON string
+    let recipientContacts = fullCampaign.recipient_contacts;
+    if (typeof recipientContacts === 'string') {
+      try {
+        recipientContacts = JSON.parse(recipientContacts);
+      } catch (e) {
+        console.error("Failed to parse recipient_contacts:", e);
+        recipientContacts = [];
+      }
+    }
+    if (!Array.isArray(recipientContacts)) {
+      recipientContacts = [];
+    }
+
     // Process recipients if they exist by calling the backend
-    if (
-      fullCampaign.recipient_contacts &&
-      fullCampaign.recipient_contacts.length > 0
-    ) {
+    if (recipientContacts && recipientContacts.length > 0) {
       console.log(
-        `Processing ${fullCampaign.recipient_contacts.length} recipients for campaign ${campaignId}`
+        `Processing ${recipientContacts.length} recipients for campaign ${campaignId}`
       );
 
       try {
@@ -92,39 +105,45 @@ export async function POST(
         const backendUrl =
           process.env.NEXT_PUBLIC_BACKEND_URL ||
           "https://bumpy-field-production.up.railway.app";
-        const backendResponse = await fetch(
-          `${backendUrl}/api/campaigns/${campaignId}/process-new-contacts`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${
-                process.env.BACKEND_API_KEY || "dev-key"
-              }`,
-            },
-            body: JSON.stringify({
-              contactIds: fullCampaign.recipient_contacts,
-            }),
-          }
-        );
+
+        const endpoint =
+          fullCampaign.campaign_type === "email"
+            ? `${backendUrl}/api/campaigns/${campaignId}/process-new-contacts`
+            : `${backendUrl}/api/campaigns/${campaignId}/process-new-contacts`;
+
+        const backendResponse = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
+          },
+          body: JSON.stringify({
+            contactIds: recipientContacts,
+          }),
+        });
 
         if (backendResponse.ok) {
           const backendResult = await backendResponse.json();
-          console.log("Backend processed contacts:", backendResult);
+          console.log(
+            `Backend processed ${fullCampaign.campaign_type} contacts:`,
+            backendResult
+          );
           processedCount =
             backendResult.processedContacts ||
-            fullCampaign.recipient_contacts.length;
+            recipientContacts.length;
         } else {
           console.error(
             "Backend failed to process contacts:",
             await backendResponse.text()
           );
-          errorCount = fullCampaign.recipient_contacts.length;
+          errorCount = recipientContacts.length;
         }
       } catch (error) {
         console.error("Error calling backend for contact processing:", error);
         // Don't fail the entire request, just log the error
-        errorCount = fullCampaign.recipient_contacts.length;
+        if (recipientContacts && recipientContacts.length > 0) {
+          errorCount = recipientContacts.length;
+        }
       }
     } else {
       console.log(
@@ -141,7 +160,7 @@ export async function POST(
       success: true,
       message: message,
       campaign: campaign,
-      patientCount: fullCampaign.recipient_contacts?.length || 0,
+      patientCount: recipientContacts?.length || 0,
       processedCount: processedCount,
       errorCount: errorCount,
       isRestart: isRestart,
