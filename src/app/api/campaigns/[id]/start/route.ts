@@ -70,7 +70,10 @@ export async function POST(
     if (campaignError || !fullCampaign) {
       console.error("Error fetching campaign details:", campaignError);
       return NextResponse.json(
-        { error: "Failed to fetch campaign details", details: campaignError?.message },
+        {
+          error: "Failed to fetch campaign details",
+          details: campaignError?.message,
+        },
         { status: 500 }
       );
     }
@@ -82,7 +85,7 @@ export async function POST(
 
     // Handle recipient_contacts - it might be an array or JSON string
     let recipientContacts = fullCampaign.recipient_contacts;
-    if (typeof recipientContacts === 'string') {
+    if (typeof recipientContacts === "string") {
       try {
         recipientContacts = JSON.parse(recipientContacts);
       } catch (e) {
@@ -129,8 +132,7 @@ export async function POST(
             backendResult
           );
           processedCount =
-            backendResult.processedContacts ||
-            recipientContacts.length;
+            backendResult.processedContacts || recipientContacts.length;
         } else {
           console.error(
             "Backend failed to process contacts:",
@@ -165,10 +167,15 @@ export async function POST(
       errorCount: errorCount,
       isRestart: isRestart,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Campaign start error:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
-      { error: "Failed to start campaign" },
+      { 
+        error: "Failed to start campaign",
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
