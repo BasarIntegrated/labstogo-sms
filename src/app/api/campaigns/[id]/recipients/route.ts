@@ -10,10 +10,10 @@ export async function GET(
 
     console.log("Fetching recipients for campaign:", campaignId);
 
-    // First, get the campaign to check recipient_contacts
+    // First, get the campaign to check recipient_contacts and campaign_type
     const { data: campaign, error: campaignError } = await supabaseAdmin
       .from("campaigns")
-      .select("recipient_contacts")
+      .select("recipient_contacts, campaign_type")
       .eq("id", campaignId)
       .single();
 
@@ -28,7 +28,10 @@ export async function GET(
     console.log("Campaign recipient_contacts:", campaign.recipient_contacts);
 
     // If no recipient_contacts, return empty array
-    if (!campaign.recipient_contacts || campaign.recipient_contacts.length === 0) {
+    if (
+      !campaign.recipient_contacts ||
+      campaign.recipient_contacts.length === 0
+    ) {
       console.log("No recipient_contacts found, returning empty array");
       return NextResponse.json([]);
     }
@@ -36,7 +39,8 @@ export async function GET(
     // Fetch contacts based on recipient_contacts array
     const { data: contacts, error: contactsError } = await supabaseAdmin
       .from("contacts")
-      .select(`
+      .select(
+        `
         id,
         first_name,
         last_name,
@@ -45,7 +49,8 @@ export async function GET(
         status,
         created_at,
         updated_at
-      `)
+      `
+      )
       .in("id", campaign.recipient_contacts);
 
     if (contactsError) {
@@ -58,8 +63,21 @@ export async function GET(
 
     console.log("Found contacts:", contacts?.length || 0);
 
+    // For email campaigns, filter out contacts without email addresses
+    let filteredContacts = contacts || [];
+    if (campaign.campaign_type === "email") {
+      filteredContacts = (contacts || []).filter(
+        (contact) => contact.email && contact.email.trim() !== ""
+      );
+      console.log(
+        `Filtered to ${filteredContacts.length} contacts with emails (out of ${
+          contacts?.length || 0
+        } total)`
+      );
+    }
+
     // Transform contacts to match the expected format
-    const recipients = contacts?.map(contact => ({
+    const recipients = filteredContacts.map((contact) => ({
       id: contact.id,
       campaign_id: campaignId,
       contact_id: contact.id,
@@ -72,8 +90,8 @@ export async function GET(
       provider_response: {},
       created_at: contact.created_at,
       updated_at: contact.updated_at,
-      contacts: contact // Include contact details
-    })) || [];
+      contacts: contact, // Include contact details
+    }));
 
     return NextResponse.json(recipients);
   } catch (error) {
