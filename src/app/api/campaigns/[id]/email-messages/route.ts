@@ -43,7 +43,7 @@ export async function GET(
     }
 
     // Fetch contact details separately if we have email messages
-    let contactsMap: Record<string, any> = {};
+    const contactsMap: Record<string, any> = {};
     if (emailMessages && emailMessages.length > 0) {
       const contactIds = emailMessages
         .map((msg) => msg.contact_id)
