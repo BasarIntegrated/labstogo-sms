@@ -11,6 +11,7 @@ import {
   Phone,
   RefreshCw,
   RotateCcw,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -28,6 +29,9 @@ export default function MessageHistoryPage() {
   const [retryingMessages, setRetryingMessages] = useState<Set<string>>(
     new Set()
   );
+  const [deletingMessages, setDeletingMessages] = useState<Set<string>>(
+    new Set()
+  );
 
   // Fetch unified messages (SMS + Email)
   const {
@@ -42,8 +46,7 @@ export default function MessageHistoryPage() {
       if (filters.status) params.append("status", filters.status);
       if (filters.campaign_id)
         params.append("campaign_id", filters.campaign_id);
-      if (filters.phone_number)
-        params.append("search", filters.phone_number);
+      if (filters.phone_number) params.append("search", filters.phone_number);
       params.append("page", filters.page.toString());
       params.append("limit", filters.limit.toString());
 
@@ -147,6 +150,43 @@ export default function MessageHistoryPage() {
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm("Are you sure you want to delete this message?")) {
+      return;
+    }
+
+    setDeletingMessages((prev) => new Set(prev).add(messageId));
+
+    try {
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete message");
+      }
+
+      // Refresh the data to show updated status
+      await refetch();
+
+      console.log("Message deleted successfully");
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete message. Please try again."
+      );
+    } finally {
+      setDeletingMessages((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -186,7 +226,9 @@ export default function MessageHistoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Message History</h1>
-          <p className="text-gray-600">View all messages (SMS + Email) sent through campaigns</p>
+          <p className="text-gray-600">
+            View all messages (SMS + Email) sent through campaigns
+          </p>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -437,27 +479,44 @@ export default function MessageHistoryPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {message.status === "failed" ? (
+                      <div className="flex items-center space-x-2">
+                        {message.status === "failed" && (
+                          <button
+                            onClick={() => handleRetryMessage(message.id)}
+                            disabled={retryingMessages.has(message.id)}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {retryingMessages.has(message.id) ? (
+                              <>
+                                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                Retrying...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="w-3 h-3 mr-1" />
+                                Retry
+                              </>
+                            )}
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleRetryMessage(message.id)}
-                          disabled={retryingMessages.has(message.id)}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleDeleteMessage(message.id)}
+                          disabled={deletingMessages.has(message.id)}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {retryingMessages.has(message.id) ? (
+                          {deletingMessages.has(message.id) ? (
                             <>
                               <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                              Retrying...
+                              Deleting...
                             </>
                           ) : (
                             <>
-                              <RotateCcw className="w-3 h-3 mr-1" />
-                              Retry
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              Delete
                             </>
                           )}
                         </button>
-                      ) : (
-                        "-"
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
