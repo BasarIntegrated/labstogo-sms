@@ -36,17 +36,42 @@ export async function POST(
       );
     }
 
+    // For email campaigns, filter out contacts without email addresses
+    let filteredContactIds = contactIds;
+    if (campaign.campaign_type === "email") {
+      // Fetch contacts to check for email addresses
+      const { data: contactsCheck, error: checkError } = await supabaseAdmin
+        .from("contacts")
+        .select("id, email")
+        .in("id", contactIds);
+
+      if (!checkError && contactsCheck) {
+        // Only include contacts that have valid email addresses
+        filteredContactIds = contactsCheck
+          .filter((c) => c.email && c.email.trim() !== "")
+          .map((c) => c.id);
+
+        if (filteredContactIds.length < contactIds.length) {
+          console.log(
+            `Filtered out ${
+              contactIds.length - filteredContactIds.length
+            } contacts without email addresses`
+          );
+        }
+      }
+    }
+
     // Merge or replace recipient contacts
     let newRecipientContacts: string[];
     let newlyAddedContacts: string[] = [];
 
     if (replaceExisting) {
-      newRecipientContacts = contactIds;
-      newlyAddedContacts = contactIds;
+      newRecipientContacts = filteredContactIds;
+      newlyAddedContacts = filteredContactIds;
     } else {
       // Merge with existing recipients, avoiding duplicates
       const existingRecipients = campaign.recipient_contacts || [];
-      const uniqueNewContacts = contactIds.filter(
+      const uniqueNewContacts = filteredContactIds.filter(
         (id) => !existingRecipients.includes(id)
       );
       newRecipientContacts = [...existingRecipients, ...uniqueNewContacts];
@@ -79,7 +104,7 @@ export async function POST(
     // For SMS campaigns, only process newly added contacts
     const contactsToProcess =
       campaign.campaign_type === "email" && campaign.status === "active"
-        ? contactIds // For email campaigns, process all assigned contacts to check for email updates
+        ? filteredContactIds // For email campaigns, process all filtered contacts (those with emails)
         : newlyAddedContacts; // For SMS, only process newly added
 
     if (campaign.status === "active" && contactsToProcess.length > 0) {
@@ -100,25 +125,52 @@ export async function POST(
         } else {
           // Check if this is an email campaign or SMS campaign
           if (campaign.campaign_type === "email") {
-            // Create email message records for new contacts
-            const emailMessages = newContacts.map((contact) => ({
-              campaign_id: campaignId,
-              contact_id: contact.id,
-              email: contact.email,
-              subject: campaign.message_template, // Use message_template as subject for now
-              html: campaign.message_template, // For now, using template as HTML
-              status: "pending",
-            }));
+            // Filter contacts that have email addresses
+            const contactsWithEmails = newContacts.filter(
+              (contact) => contact.email && contact.email.trim() !== ""
+            );
 
-            const { error: emailError } = await supabaseAdmin
-              .from("email_messages")
-              .insert(emailMessages);
-
-            if (emailError) {
-              console.error(
-                "Failed to create email messages for new contacts:",
-                emailError
+            if (contactsWithEmails.length === 0) {
+              console.log(
+                "No contacts with email addresses found for email campaign"
               );
+            } else {
+              // Create email message records for new contacts
+              // Check for existing email_messages to avoid duplicates
+              const { data: existingEmails } = await supabaseAdmin
+                .from("email_messages")
+                .select("contact_id")
+                .eq("campaign_id", campaignId)
+                .in(
+                  "contact_id",
+                  contactsWithEmails.map((c) => c.id)
+                );
+
+              const existingContactIds = new Set(
+                (existingEmails || []).map((e: any) => e.contact_id)
+              );
+
+              const emailMessages = contactsWithEmails
+                .filter((contact) => !existingContactIds.has(contact.id))
+                .map((contact) => ({
+                  campaign_id: campaignId,
+                  contact_id: contact.id,
+                  email: contact.email,
+                  subject: campaign.message_template, // Use message_template as subject for now
+                  html: campaign.message_template, // For now, using template as HTML
+                  status: "pending",
+                }));
+
+              if (emailMessages.length > 0) {
+                const { error: emailError } = await supabaseAdmin
+                  .from("email_messages")
+                  .insert(emailMessages);
+
+                if (emailError) {
+                  console.error(
+                    "Failed to create email messages for new contacts:",
+                    emailError
+                  );
                 } else {
                   console.log(
                     `Created ${emailMessages.length} email message records for new contacts`
@@ -129,7 +181,7 @@ export async function POST(
                     const backendUrl =
                       process.env.NEXT_PUBLIC_BACKEND_URL ||
                       "https://bumpy-field-production.up.railway.app";
-                    
+
                     const emailResponse = await fetch(
                       `${backendUrl}/api/process-pending-emails`,
                       {
@@ -144,17 +196,31 @@ export async function POST(
                     );
 
                     if (!emailResponse.ok) {
-                      console.error("Backend email processing trigger failed:", await emailResponse.text());
+                      console.error(
+                        "Backend email processing trigger failed:",
+                        await emailResponse.text()
+                      );
                       // Don't fail, backend worker will poll database
                     } else {
-                      console.log("Backend notified to process pending email messages");
+                      console.log(
+                        "Backend notified to process pending email messages"
+                      );
                     }
                   } catch (emailError) {
-                    console.error("Error calling backend for email processing:", emailError);
+                    console.error(
+                      "Error calling backend for email processing:",
+                      emailError
+                    );
                     // Don't fail, backend worker will poll database
                   }
                 }
               } else {
+                console.log(
+                  "No new email messages to create (all contacts already have messages or no valid emails)"
+                );
+              }
+            }
+          } else {
             // Create SMS message records for new contacts
             const smsMessages = newContacts.map((contact) => ({
               campaign_id: campaignId,
