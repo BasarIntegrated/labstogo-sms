@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       name,
       description,
       message_template,
+      campaign_type = "general",
       status = "draft",
       recipient_type = "all",
       recipient_groups,
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest) {
       name,
       description: description || "",
       message_template,
+      campaign_type,
       status,
       recipient_type,
       created_by: created_by || (await getDefaultAdminUserId()),
@@ -118,6 +120,7 @@ export async function PUT(request: NextRequest) {
       name,
       description,
       message_template,
+      campaign_type,
       status,
       recipient_type,
       recipient_groups,
@@ -148,6 +151,7 @@ export async function PUT(request: NextRequest) {
     };
 
     // Add optional fields if provided
+    if (campaign_type) updateData.campaign_type = campaign_type;
     if (status) updateData.status = status;
     if (recipient_type) updateData.recipient_type = recipient_type;
     if (recipient_groups) updateData.recipient_groups = recipient_groups;

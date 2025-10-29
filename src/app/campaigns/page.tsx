@@ -342,7 +342,7 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
@@ -487,6 +487,9 @@ export default function CampaignsPage() {
                     Campaign
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -509,13 +512,13 @@ export default function CampaignsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center">
+                    <td colSpan={8} className="px-6 py-4 text-center">
                       <div className="animate-pulse">Loading campaigns...</div>
                     </td>
                   </tr>
                 ) : filteredCampaigns.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center">
+                    <td colSpan={8} className="px-6 py-4 text-center">
                       <div className="text-gray-500">
                         <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                         <p>No campaigns found</p>
@@ -547,6 +550,11 @@ export default function CampaignsPage() {
                             </div>
                           )}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                          {campaign.campaign_type || "general"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span

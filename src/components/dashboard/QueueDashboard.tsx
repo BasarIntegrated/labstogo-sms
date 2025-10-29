@@ -38,8 +38,22 @@ interface BackendHealth {
   timestamp: string;
   workers: {
     sms: boolean;
+    email?: boolean;
     campaign: boolean;
   };
+}
+
+interface LogEntry {
+  timestamp: string;
+  level: string;
+  message: string;
+  data?: any;
+}
+
+interface LogsResponse {
+  logs: LogEntry[];
+  totalEntries: number;
+  returnedEntries: number;
 }
 
 export default function QueueDashboard() {
@@ -75,6 +89,17 @@ export default function QueueDashboard() {
     refetchInterval: refreshInterval,
   });
 
+  // Fetch logs from backend
+  const { data: logsData, isLoading: logsLoading } = useQuery({
+    queryKey: ["backend-logs"],
+    queryFn: async (): Promise<LogsResponse> => {
+      const response = await fetch("/api/backend/logs?limit=50");
+      if (!response.ok) throw new Error("Failed to fetch logs");
+      return response.json();
+    },
+    refetchInterval: refreshInterval,
+  });
+
   const getQueueStatusColor = (count: number) => {
     if (count === 0) return "text-green-600 bg-green-100";
     if (count < 10) return "text-yellow-600 bg-yellow-100";
@@ -93,6 +118,21 @@ export default function QueueDashboard() {
     ) : (
       <XCircle className="w-4 h-4" />
     );
+  };
+
+  const getLogLevelColor = (level: string) => {
+    switch (level) {
+      case "error":
+        return "text-red-600 bg-red-100";
+      case "warn":
+        return "text-yellow-600 bg-yellow-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString();
   };
 
   if (queueLoading || healthLoading) {
@@ -325,6 +365,58 @@ export default function QueueDashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Logs Viewer */}
+      <div className="bg-white shadow rounded-lg p-6 mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <RefreshCw className="w-5 h-5 text-gray-600" />
+            <h3 className="text-lg font-medium text-gray-900">
+              Real-time Logs
+            </h3>
+          </div>
+          {logsData && (
+            <span className="text-sm text-gray-500">
+              {logsData.totalEntries} entries in buffer
+            </span>
+          )}
+        </div>
+
+        {logsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="w-5 h-5 animate-spin text-blue-500" />
+          </div>
+        ) : (
+          <div className="bg-gray-900 rounded-lg p-4 h-96 overflow-y-auto font-mono text-sm">
+            {logsData?.logs.length === 0 ? (
+              <p className="text-gray-400">No logs available</p>
+            ) : (
+              <div className="space-y-1">
+                {logsData?.logs
+                  .slice()
+                  .reverse()
+                  .map((log, index) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-gray-500 min-w-[85px]">
+                        {formatTimestamp(log.timestamp)}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-semibold min-w-[50px] ${getLogLevelColor(
+                          log.level
+                        )}`}
+                      >
+                        {log.level.toUpperCase()}
+                      </span>
+                      <span className="text-gray-300 flex-1 break-all">
+                        {log.message}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

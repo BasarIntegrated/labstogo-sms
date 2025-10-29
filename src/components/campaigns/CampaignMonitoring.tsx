@@ -59,7 +59,7 @@ export default function CampaignMonitoring({
     refetchInterval: refreshInterval,
   });
 
-  // Fetch SMS messages
+  // Fetch SMS messages (conditional based on campaign type)
   const { data: smsMessages, isLoading: smsLoading } = useQuery({
     queryKey: ["sms-messages", campaignId],
     queryFn: async () => {
@@ -68,9 +68,24 @@ export default function CampaignMonitoring({
       return response.json();
     },
     refetchInterval: refreshInterval,
+    enabled: !campaignLoading && campaign?.campaign_type !== "email", // Only fetch if not email campaign
   });
 
-  if (campaignLoading || recipientsLoading || smsLoading) {
+  // Fetch Email messages (conditional based on campaign type)
+  const { data: emailMessages, isLoading: emailLoading } = useQuery({
+    queryKey: ["email-messages", campaignId],
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/campaigns/${campaignId}/email-messages`
+      );
+      if (!response.ok) throw new Error("Failed to fetch email messages");
+      return response.json();
+    },
+    refetchInterval: refreshInterval,
+    enabled: !campaignLoading && campaign?.campaign_type === "email", // Only fetch if email campaign
+  });
+
+  if (campaignLoading || recipientsLoading || smsLoading || emailLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
@@ -115,15 +130,20 @@ export default function CampaignMonitoring({
     name: campaign.name || "Unnamed Campaign",
   };
 
+  // Use the appropriate messages based on campaign type
+  const messages =
+    campaign?.campaign_type === "email"
+      ? emailMessages || []
+      : smsMessages || [];
+
   const totalRecipients = recipients?.length || 0;
   const sentCount =
-    smsMessages?.filter((msg: SMSMessage) => msg.status === "sent").length || 0;
+    messages?.filter((msg: SMSMessage) => msg.status === "sent").length || 0;
   const deliveredCount =
-    smsMessages?.filter((msg: SMSMessage) => msg.status === "delivered")
-      .length || 0;
-  const failedCount =
-    smsMessages?.filter((msg: SMSMessage) => msg.status === "failed").length ||
+    messages?.filter((msg: SMSMessage) => msg.status === "delivered").length ||
     0;
+  const failedCount =
+    messages?.filter((msg: SMSMessage) => msg.status === "failed").length || 0;
   const pendingCount = totalRecipients - sentCount - failedCount;
 
   // Safe division to avoid NaN
@@ -393,7 +413,7 @@ export default function CampaignMonitoring({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {smsMessages?.map((message: SMSMessage) => (
+                {messages?.map((message: SMSMessage) => (
                   <tr key={message.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {message.contacts?.first_name &&

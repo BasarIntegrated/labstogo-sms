@@ -2,13 +2,15 @@
 
 import { Campaign } from "@/types/database";
 import { Save, X } from "lucide-react";
-import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 // Dynamically import EmailEditor to avoid SSR issues
 const EmailEditor = dynamic(() => import("./EmailEditor"), {
   ssr: false,
-  loading: () => <div className="h-64 bg-gray-50 animate-pulse border border-gray-300 rounded" />,
+  loading: () => (
+    <div className="h-64 bg-gray-50 animate-pulse border border-gray-300 rounded" />
+  ),
 });
 
 interface CampaignComposerProps {
@@ -187,7 +189,9 @@ export default function CampaignComposer({
                 {formData.campaign_type === "email" ? (
                   <EmailEditor
                     content={formData.message_template}
-                    onChange={(value) => handleInputChange("message_template", value)}
+                    onChange={(value) =>
+                      handleInputChange("message_template", value)
+                    }
                   />
                 ) : (
                   <textarea
