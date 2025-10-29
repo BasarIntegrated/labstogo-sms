@@ -29,26 +29,26 @@ export default function MessageHistoryPage() {
     new Set()
   );
 
-  // Fetch SMS messages
+  // Fetch unified messages (SMS + Email)
   const {
     data: messageData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["sms-messages", filters],
+    queryKey: ["messages", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append("status", filters.status);
       if (filters.campaign_id)
         params.append("campaign_id", filters.campaign_id);
       if (filters.phone_number)
-        params.append("phone_number", filters.phone_number);
+        params.append("search", filters.phone_number);
       params.append("page", filters.page.toString());
       params.append("limit", filters.limit.toString());
 
-      const response = await fetch(`/api/sms-messages?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch SMS messages");
+      const response = await fetch(`/api/messages?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },
   });
@@ -186,9 +186,7 @@ export default function MessageHistoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Message History</h1>
-          <p className="text-gray-600">
-            View all SMS messages sent through campaigns
-          </p>
+          <p className="text-gray-600">View all messages (SMS + Email) sent through campaigns</p>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -230,7 +228,7 @@ export default function MessageHistoryPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                Phone or Email
               </label>
               <input
                 type="text"
@@ -238,7 +236,7 @@ export default function MessageHistoryPage() {
                 onChange={(e) =>
                   handleFilterChange("phone_number", e.target.value)
                 }
-                placeholder="Search by phone number..."
+                placeholder="Search by phone or email..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
