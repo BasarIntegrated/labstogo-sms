@@ -74,18 +74,25 @@ export async function POST(
 
     console.log("Campaign updated successfully:", updatedCampaign);
 
-    // If campaign is active and we have newly added contacts, process them immediately
-    if (campaign.status === "active" && newlyAddedContacts.length > 0) {
+    // If campaign is active, process contacts
+    // For email campaigns, check all assigned contacts (in case email was updated)
+    // For SMS campaigns, only process newly added contacts
+    const contactsToProcess =
+      campaign.campaign_type === "email" && campaign.status === "active"
+        ? contactIds // For email campaigns, process all assigned contacts to check for email updates
+        : newlyAddedContacts; // For SMS, only process newly added
+
+    if (campaign.status === "active" && contactsToProcess.length > 0) {
       console.log(
-        `Campaign is active, processing ${newlyAddedContacts.length} newly added contacts`
+        `Campaign is active, processing ${contactsToProcess.length} contacts`
       );
 
       try {
-        // Get contact details for newly added contacts
+        // Get contact details
         const { data: newContacts, error: contactsError } = await supabaseAdmin
           .from("contacts")
           .select("*")
-          .in("id", newlyAddedContacts);
+          .in("id", contactsToProcess);
 
         if (contactsError || !newContacts) {
           console.error("Failed to fetch new contacts:", contactsError);

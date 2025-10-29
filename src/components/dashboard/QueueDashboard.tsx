@@ -371,10 +371,15 @@ export default function QueueDashboard() {
       <div className="bg-white shadow rounded-lg p-6 mt-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <RefreshCw className="w-5 h-5 text-gray-600" />
+            <RefreshCw 
+              className={`w-5 h-5 text-gray-600 ${logsLoading ? 'animate-spin' : ''}`}
+            />
             <h3 className="text-lg font-medium text-gray-900">
               Real-time Logs
             </h3>
+            <span className="text-xs text-gray-400">
+              (Auto-refresh: {refreshInterval / 1000}s)
+            </span>
           </div>
           {logsData && (
             <span className="text-sm text-gray-500">
