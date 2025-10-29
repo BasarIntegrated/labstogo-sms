@@ -84,6 +84,34 @@ export async function POST(
 
       messagesCreated = emailMessages.length;
       console.log(`Created ${messagesCreated} email message records`);
+
+      // Notify backend to process pending email messages
+      try {
+        const backendUrl =
+          process.env.NEXT_PUBLIC_BACKEND_URL ||
+          "https://bumpy-field-production.up.railway.app";
+        
+        const backendResponse = await fetch(
+          `${backendUrl}/api/process-pending-emails`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.BACKEND_API_KEY || "dev-key"}`,
+            },
+          }
+        );
+
+        if (!backendResponse.ok) {
+          console.error("Backend email processing trigger failed:", await backendResponse.text());
+          // Don't fail the request, backend worker will poll database
+        } else {
+          console.log("Backend notified to process pending email messages");
+        }
+      } catch (backendError) {
+        console.error("Error calling backend for email processing:", backendError);
+        // Don't fail the request, backend worker will poll database
+      }
     } else {
       // Create SMS message records
       const smsMessages = contacts.map((contact) => ({
@@ -110,11 +138,8 @@ export async function POST(
       console.log(`Created ${messagesCreated} SMS message records`);
     }
 
-    // TODO: Add jobs to queue for immediate processing
-    // This would require backend integration
-    console.log(
-      "Message jobs should be added to queue for immediate processing"
-    );
+    // Backend notification already handled above for email campaigns
+    // SMS campaigns will be processed by backend worker polling the database
 
     return NextResponse.json({
       success: true,

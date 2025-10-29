@@ -119,12 +119,42 @@ export async function POST(
                 "Failed to create email messages for new contacts:",
                 emailError
               );
-            } else {
-              console.log(
-                `Created ${emailMessages.length} email message records for new contacts`
-              );
-            }
-          } else {
+                } else {
+                  console.log(
+                    `Created ${emailMessages.length} email message records for new contacts`
+                  );
+
+                  // Notify backend to process pending email messages
+                  try {
+                    const backendUrl =
+                      process.env.NEXT_PUBLIC_BACKEND_URL ||
+                      "https://bumpy-field-production.up.railway.app";
+                    
+                    const emailResponse = await fetch(
+                      `${backendUrl}/api/process-pending-emails`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${
+                            process.env.BACKEND_API_KEY || "dev-key"
+                          }`,
+                        },
+                      }
+                    );
+
+                    if (!emailResponse.ok) {
+                      console.error("Backend email processing trigger failed:", await emailResponse.text());
+                      // Don't fail, backend worker will poll database
+                    } else {
+                      console.log("Backend notified to process pending email messages");
+                    }
+                  } catch (emailError) {
+                    console.error("Error calling backend for email processing:", emailError);
+                    // Don't fail, backend worker will poll database
+                  }
+                }
+              } else {
             // Create SMS message records for new contacts
             const smsMessages = newContacts.map((contact) => ({
               campaign_id: campaignId,
