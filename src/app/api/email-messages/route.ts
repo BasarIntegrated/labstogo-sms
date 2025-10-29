@@ -29,16 +29,7 @@ export async function GET(request: NextRequest) {
         retry_count,
         last_retry_at,
         created_at,
-        updated_at,
-        campaigns (
-          id,
-          name
-        ),
-        contacts (
-          id,
-          first_name,
-          last_name
-        )
+        updated_at
       `
       )
       .order("updated_at", { ascending: false });
@@ -60,6 +51,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch related campaigns and contacts separately
+    const campaignIds = [
+      ...new Set((emailMessages || []).map((m: any) => m.campaign_id)),
+    ];
+    const contactIds = [
+      ...new Set((emailMessages || []).map((m: any) => m.contact_id)),
+    ];
+
+    const campaignsMap = new Map();
+    const contactsMap = new Map();
+
+    if (campaignIds.length > 0) {
+      const { data: campaigns } = await supabaseAdmin
+        .from("campaigns")
+        .select("id, name")
+        .in("id", campaignIds);
+      campaigns?.forEach((c: any) => campaignsMap.set(c.id, c));
+    }
+
+    if (contactIds.length > 0) {
+      const { data: contacts } = await supabaseAdmin
+        .from("contacts")
+        .select("id, first_name, last_name")
+        .in("id", contactIds);
+      contacts?.forEach((c: any) => contactsMap.set(c.id, c));
+    }
+
+    // Attach related data to messages
+    const messagesWithRelations = (emailMessages || []).map((m: any) => ({
+      ...m,
+      campaigns: campaignsMap.get(m.campaign_id) || null,
+      contacts: contactsMap.get(m.contact_id) || null,
+    }));
+
     // Count
     let countQuery = supabaseAdmin
       .from("email_messages")
@@ -78,7 +103,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      messages: emailMessages || [],
+      messages: messagesWithRelations,
       total: count || 0,
       page,
       limit,
@@ -91,5 +116,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-

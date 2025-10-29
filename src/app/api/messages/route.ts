@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch Email
+    // Fetch Email messages
     let emailQuery = supabaseAdmin
       .from("email_messages")
       .select(
@@ -74,9 +74,7 @@ export async function GET(request: NextRequest) {
         retry_count,
         last_retry_at,
         created_at,
-        updated_at,
-        campaigns ( id, name ),
-        contacts ( id, first_name, last_name )
+        updated_at
       `
       )
       .order("updated_at", { ascending: false })
@@ -93,6 +91,33 @@ export async function GET(request: NextRequest) {
         { error: "Failed to fetch email messages" },
         { status: 500 }
       );
+    }
+
+    // Fetch related campaigns and contacts for email messages
+    const emailCampaignIds = [
+      ...new Set((emailMessages || []).map((m: any) => m.campaign_id)),
+    ];
+    const emailContactIds = [
+      ...new Set((emailMessages || []).map((m: any) => m.contact_id)),
+    ];
+
+    const emailCampaignsMap = new Map();
+    const emailContactsMap = new Map();
+
+    if (emailCampaignIds.length > 0) {
+      const { data: campaigns } = await supabaseAdmin
+        .from("campaigns")
+        .select("id, name")
+        .in("id", emailCampaignIds);
+      campaigns?.forEach((c: any) => emailCampaignsMap.set(c.id, c));
+    }
+
+    if (emailContactIds.length > 0) {
+      const { data: contacts } = await supabaseAdmin
+        .from("contacts")
+        .select("id, first_name, last_name")
+        .in("id", emailContactIds);
+      contacts?.forEach((c: any) => emailContactsMap.set(c.id, c));
     }
 
     // Normalize into a common shape the UI already understands
@@ -137,16 +162,17 @@ export async function GET(request: NextRequest) {
         last_retry_at: m.last_retry_at,
         created_at: m.created_at,
         updated_at: m.updated_at,
-        campaigns: m.campaigns,
-        contacts: m.contacts,
+        campaigns: emailCampaignsMap.get(m.campaign_id) || null,
+        contacts: emailContactsMap.get(m.contact_id) || null,
         kind: "email" as const,
       })),
     ];
 
     // Sort by updated_at desc
-    normalized.sort((a, b) =>
-      (b.updated_at ? new Date(b.updated_at).getTime() : 0) -
-      (a.updated_at ? new Date(a.updated_at).getTime() : 0)
+    normalized.sort(
+      (a, b) =>
+        (b.updated_at ? new Date(b.updated_at).getTime() : 0) -
+        (a.updated_at ? new Date(a.updated_at).getTime() : 0)
     );
 
     return NextResponse.json({
@@ -163,5 +189,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-
