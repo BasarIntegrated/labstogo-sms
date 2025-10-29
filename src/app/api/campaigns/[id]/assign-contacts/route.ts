@@ -24,7 +24,7 @@ export async function POST(
     // Get current campaign data including status
     const { data: campaign, error: campaignError } = await supabaseAdmin
       .from("campaigns")
-      .select("recipient_contacts, status, message_template")
+      .select("recipient_contacts, status, message_template, campaign_type")
       .eq("id", campaignId)
       .single();
 
@@ -91,60 +91,88 @@ export async function POST(
           console.error("Failed to fetch new contacts:", contactsError);
           // Don't fail the assignment, just log the error
         } else {
-          // Create SMS message records for new contacts
-          const smsMessages = newContacts.map((contact) => ({
-            campaign_id: campaignId,
-            contact_id: contact.id,
-            phone_number: contact.phone_number,
-            message: campaign.message_template,
-            status: "pending",
-          }));
+          // Check if this is an email campaign or SMS campaign
+          if (campaign.campaign_type === "email") {
+            // Create email message records for new contacts
+            const emailMessages = newContacts.map((contact) => ({
+              campaign_id: campaignId,
+              contact_id: contact.id,
+              email: contact.email,
+              subject: campaign.message_template, // Use message_template as subject for now
+              html: campaign.message_template, // For now, using template as HTML
+              status: "pending",
+            }));
 
-          const { error: smsError } = await supabaseAdmin
-            .from("sms_messages")
-            .insert(smsMessages);
+            const { error: emailError } = await supabaseAdmin
+              .from("email_messages")
+              .insert(emailMessages);
 
-          if (smsError) {
-            console.error(
-              "Failed to create SMS messages for new contacts:",
-              smsError
-            );
-          } else {
-            console.log(
-              `Created ${smsMessages.length} SMS message records for new contacts`
-            );
-
-            // Call backend to add SMS jobs to queue for immediate processing
-            try {
-              const backendResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/campaigns/${campaignId}/process-new-contacts`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${
-                      process.env.BACKEND_API_KEY || "dev-key"
-                    }`,
-                  },
-                  body: JSON.stringify({ contactIds: newlyAddedContacts }),
-                }
-              );
-
-              if (backendResponse.ok) {
-                const backendResult = await backendResponse.json();
-                console.log("Backend processed new contacts:", backendResult);
-              } else {
-                console.error(
-                  "Backend failed to process new contacts:",
-                  await backendResponse.text()
-                );
-              }
-            } catch (backendError) {
+            if (emailError) {
               console.error(
-                "Error calling backend for new contact processing:",
-                backendError
+                "Failed to create email messages for new contacts:",
+                emailError
+              );
+            } else {
+              console.log(
+                `Created ${emailMessages.length} email message records for new contacts`
               );
             }
+          } else {
+            // Create SMS message records for new contacts
+            const smsMessages = newContacts.map((contact) => ({
+              campaign_id: campaignId,
+              contact_id: contact.id,
+              phone_number: contact.phone_number,
+              message: campaign.message_template,
+              status: "pending",
+            }));
+
+            const { error: smsError } = await supabaseAdmin
+              .from("sms_messages")
+              .insert(smsMessages);
+
+            if (smsError) {
+              console.error(
+                "Failed to create SMS messages for new contacts:",
+                smsError
+              );
+            } else {
+              console.log(
+                `Created ${smsMessages.length} SMS message records for new contacts`
+              );
+            }
+          }
+
+          // Call backend to add jobs to queue for immediate processing
+          try {
+            const backendResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/campaigns/${campaignId}/process-new-contacts`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${
+                    process.env.BACKEND_API_KEY || "dev-key"
+                  }`,
+                },
+                body: JSON.stringify({ contactIds: newlyAddedContacts }),
+              }
+            );
+
+            if (backendResponse.ok) {
+              const backendResult = await backendResponse.json();
+              console.log("Backend processed new contacts:", backendResult);
+            } else {
+              console.error(
+                "Backend failed to process new contacts:",
+                await backendResponse.text()
+              );
+            }
+          } catch (backendError) {
+            console.error(
+              "Error calling backend for new contact processing:",
+              backendError
+            );
           }
         }
       } catch (error) {

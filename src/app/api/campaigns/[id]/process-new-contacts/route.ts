@@ -56,38 +56,73 @@ export async function POST(
       );
     }
 
-    // Create SMS message records
-    const smsMessages = contacts.map((contact) => ({
-      campaign_id: campaignId,
-      contact_id: contact.id,
-      phone_number: contact.phone_number,
-      message: campaign.message_template,
-      status: "pending",
-    }));
+    let messagesCreated = 0;
 
-    const { error: smsError } = await supabaseAdmin
-      .from("sms_messages")
-      .insert(smsMessages);
+    // Check if this is an email campaign or SMS campaign
+    if (campaign.campaign_type === "email") {
+      // Create email message records
+      const emailMessages = contacts.map((contact) => ({
+        campaign_id: campaignId,
+        contact_id: contact.id,
+        email: contact.email,
+        subject: campaign.message_template, // Use message_template as subject for now
+        html: campaign.message_template, // For now, using template as HTML
+        status: "pending",
+      }));
 
-    if (smsError) {
-      console.error("Failed to create SMS messages:", smsError);
-      return NextResponse.json(
-        { error: "Failed to create SMS messages" },
-        { status: 500 }
-      );
+      const { error: emailError } = await supabaseAdmin
+        .from("email_messages")
+        .insert(emailMessages);
+
+      if (emailError) {
+        console.error("Failed to create email messages:", emailError);
+        return NextResponse.json(
+          { error: "Failed to create email messages" },
+          { status: 500 }
+        );
+      }
+
+      messagesCreated = emailMessages.length;
+      console.log(`Created ${messagesCreated} email message records`);
+    } else {
+      // Create SMS message records
+      const smsMessages = contacts.map((contact) => ({
+        campaign_id: campaignId,
+        contact_id: contact.id,
+        phone_number: contact.phone_number,
+        message: campaign.message_template,
+        status: "pending",
+      }));
+
+      const { error: smsError } = await supabaseAdmin
+        .from("sms_messages")
+        .insert(smsMessages);
+
+      if (smsError) {
+        console.error("Failed to create SMS messages:", smsError);
+        return NextResponse.json(
+          { error: "Failed to create SMS messages" },
+          { status: 500 }
+        );
+      }
+
+      messagesCreated = smsMessages.length;
+      console.log(`Created ${messagesCreated} SMS message records`);
     }
 
-    // TODO: Add SMS jobs to queue for immediate processing
+    // TODO: Add jobs to queue for immediate processing
     // This would require backend integration
-    console.log(`Created ${smsMessages.length} SMS message records`);
-    console.log("SMS jobs should be added to queue for immediate processing");
+    console.log(
+      "Message jobs should be added to queue for immediate processing"
+    );
 
     return NextResponse.json({
       success: true,
       message: `Processed ${contacts.length} newly assigned contacts`,
       campaignId,
       processedContacts: contacts.length,
-      smsMessagesCreated: smsMessages.length,
+      messagesCreated: messagesCreated,
+      campaignType: campaign.campaign_type,
     });
   } catch (error: any) {
     console.error("Error processing new contacts:", error);
