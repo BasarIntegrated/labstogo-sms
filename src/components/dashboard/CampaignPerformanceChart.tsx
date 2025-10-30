@@ -85,8 +85,8 @@ export const CampaignPerformanceChart: React.FC<
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-200bg-gray-700 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -97,10 +97,10 @@ export const CampaignPerformanceChart: React.FC<
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900text-white">
             Campaign Performance
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             {timeRange?.period === "7d"
               ? "Last 7 days"
               : timeRange?.period === "30d"
@@ -158,7 +158,7 @@ export const CampaignPerformanceChart: React.FC<
                 </div>
 
                 {/* Date Label */}
-                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center">
+                <div className="mt-2 text-xs text-gray-600 text-center">
                   {new Date(item.date).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -174,51 +174,51 @@ export const CampaignPerformanceChart: React.FC<
       <div className="mt-6 flex items-center justify-center space-x-6">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-blue-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600">
             Messages Sent
           </span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-green-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600">
             Active Campaigns
           </span>
         </div>
       </div>
 
       {/* Summary Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
         <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="text-2xl font-semibold text-gray-900text-white">
             {chartData
               .reduce((sum, item) => sum + item.messagesSent, 0)
               .toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600">
             Total Messages
           </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="text-2xl font-semibold text-gray-900text-white">
             {(
               chartData.reduce((sum, item) => sum + item.deliveryRate, 0) /
               chartData.length
             ).toFixed(1)}
             %
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600">
             Avg Delivery Rate
           </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="text-2xl font-semibold text-gray-900text-white">
             {(
               chartData.reduce((sum, item) => sum + item.engagementRate, 0) /
               chartData.length
             ).toFixed(1)}
             %
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600">
             Avg Engagement
           </div>
         </div>

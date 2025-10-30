@@ -15,7 +15,7 @@ interface MetricCardProps {
     type: "increase" | "decrease" | "neutral";
   };
   icon: React.ReactNode;
-  color: "blue" | "green" | "yellow" | "red" | "purple";
+  color: "blue" | "green" | "yellow" | "red" | "purple" | "orange";
   loading?: boolean;
 }
 
@@ -28,33 +28,30 @@ const MetricCard: React.FC<MetricCardProps> = ({
   loading = false,
 }) => {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-    green:
-      "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400",
-    yellow:
-      "bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400",
-    red: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
-    purple:
-      "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+    blue: "bg-blue-100 text-blue-600",
+    green: "bg-green-100 text-green-600",
+    yellow: "bg-yellow-100 text-yellow-600",
+    red: "bg-red-100 text-red-600",
+    purple: "bg-purple-100 text-purple-600",
+    orange: "bg-orange-100 text-orange-600",
   };
 
   const changeClasses = {
-    increase: "text-green-600 dark:text-green-400",
-    decrease: "text-red-600 dark:text-red-400",
-    neutral: "text-gray-600 dark:text-gray-400",
+    increase: "text-green-600",
+    decrease: "text-red-600",
+    neutral: "text-gray-600",
   };
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white p-6 rounded-lg shadow">
         <div className="animate-pulse">
-          <div className="flex items-center justify-between">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          </div>
-          <div className="mt-4">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-            <div className="mt-2 h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+          <div className="flex items-center">
+            <div className="h-12 w-12 bg-gray-200 rounded-lg"></div>
+            <div className="ml-4 flex-1">
+              <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-16"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -62,36 +59,23 @@ const MetricCard: React.FC<MetricCardProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-          {title}
-        </h3>
-        <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
-      </div>
-
-      <div className="mt-4">
-        <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {typeof value === "number" ? value.toLocaleString() : value}
-        </p>
-
-        {change && (
-          <div className="mt-2 flex items-center">
-            <span
-              className={`text-sm font-medium ${changeClasses[change.type]}`}
-            >
-              {change.type === "increase"
-                ? "+"
-                : change.type === "decrease"
-                ? "-"
-                : ""}
-              {Math.abs(change.value)}%
-            </span>
-            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-              vs last period
-            </span>
-          </div>
-        )}
+    <div className="bg-white p-6 rounded-lg shadow">
+      <div className="flex items-center">
+        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+          {icon}
+        </div>
+        <div className="ml-4">
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {typeof value === "number" ? value.toLocaleString() : value}
+          </p>
+          {change && (
+            <p className={`text-xs mt-1 ${changeClasses[change.type]}`}>
+              {change.type === "increase" ? "+" : change.type === "decrease" ? "-" : ""}
+              {Math.abs(change.value)}% vs last period
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -113,7 +97,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ metrics }) => {
       change: { value: 12, type: "increase" as const },
       icon: (
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -134,7 +118,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ metrics }) => {
       change: { value: 8, type: "increase" as const },
       icon: (
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -155,7 +139,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ metrics }) => {
       change: { value: 5, type: "increase" as const },
       icon: (
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -176,7 +160,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ metrics }) => {
       change: { value: 2, type: "increase" as const },
       icon: (
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -189,12 +173,12 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ metrics }) => {
           />
         </svg>
       ),
-      color: "green" as const,
+      color: "orange" as const,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {metricsData.map((metric, index) => (
         <MetricCard
           key={index}

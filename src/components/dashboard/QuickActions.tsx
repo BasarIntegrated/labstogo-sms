@@ -22,27 +22,27 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   onClick,
 }) => {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
+    blue: "bg-blue-50 text-blue-600 hover:bg-blue-100",
     green:
-      "bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30",
+      "bg-green-50 text-green-600 hover:bg-green-100",
     purple:
-      "bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/30",
+      "bg-purple-50 text-purple-600 hover:bg-purple-100",
     yellow:
-      "bg-yellow-50 text-yellow-600 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30",
+      "bg-yellow-50 text-yellow-600 hover:bg-yellow-100",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`w-full p-4 rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md ${colorClasses[color]}`}
+      className={`w-full p-4 rounded-lg border border-gray-200 transition-all duration-200 hover:shadow-md ${colorClasses[color]}`}
     >
       <div className="flex items-center space-x-3">
         <div className="flex-shrink-0">{icon}</div>
         <div className="text-left">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+          <h4 className="text-sm font-medium text-gray-900">
             {title}
           </h4>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-600 mt-1">
             {description}
           </p>
         </div>
@@ -154,13 +154,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-white rounded-lg shadow">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="p-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">
           Quick Actions
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm text-gray-600 mt-1">
           Common tasks and workflows
         </p>
       </div>
@@ -180,8 +180,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <button className="w-full text-center text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-medium">
+      <div className="p-4 border-t border-gray-200">
+        <button className="w-full text-center text-sm text-gray-600 hover:text-gray-700 font-medium">
           View All Actions
         </button>
       </div>

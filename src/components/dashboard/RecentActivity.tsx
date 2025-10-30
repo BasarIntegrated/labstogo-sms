@@ -15,12 +15,10 @@ interface ActivityItemProps {
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
   const statusColors = {
-    success:
-      "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
-    warning:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
-    error: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
-    info: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
+    success: "bg-green-100 text-green-800bg-green-900/20text-green-400",
+    warning: "bg-yellow-100 text-yellow-800bg-yellow-900/20text-yellow-400",
+    error: "bg-red-100 text-red-800bg-red-900/20text-red-400",
+    info: "bg-blue-100 text-blue-800bg-blue-900/20text-blue-400",
   };
 
   const typeIcons = {
@@ -100,7 +98,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
 
   return (
     <div
-      className="flex items-start space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors"
+      className="flex items-start space-x-3 p-4 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
       onClick={handleClick}
     >
       <div className="flex-shrink-0">
@@ -111,10 +109,10 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          <h4 className="text-sm font-medium text-gray-900text-white truncate">
             {activity.title}
           </h4>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-gray-500">
             {new Date(activity.timestamp).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
@@ -122,7 +120,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
           </span>
         </div>
 
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
           {activity.description}
         </p>
 
@@ -133,7 +131,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClick }) => {
               .map(([key, value]) => (
                 <span
                   key={key}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800bg-gray-600text-gray-200"
                 >
                   {key}: {String(value)}
                 </span>
@@ -202,17 +200,17 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="w-8 h-8 bg-gray-200 rounded-lg"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   </div>
                 </div>
               ))}
@@ -224,15 +222,15 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-white rounded-lg shadow">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               Recent Activity
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               Latest updates and notifications
             </p>
           </div>
@@ -248,7 +246,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
       </div>
 
       {/* Activity List */}
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="divide-y divide-gray-200">
         {displayActivities.map((activity) => (
           <ActivityItem
             key={activity.id}
@@ -259,8 +257,8 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+      <div className="p-4 border-t border-gray-200">
+        <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium">
           View All Activity
         </button>
       </div>

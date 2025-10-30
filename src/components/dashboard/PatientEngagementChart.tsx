@@ -81,7 +81,12 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
 
   const maxPatients = Math.max(
     ...chartData.map((d) =>
-      Math.max(d.newPatients, d.activePatients, d.renewedPatients, d.expiredPatients)
+      Math.max(
+        d.newPatients,
+        d.activePatients,
+        d.renewedPatients,
+        d.expiredPatients
+      )
     )
   );
 
@@ -89,8 +94,8 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-200bg-gray-700 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -101,10 +106,10 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900text-white">
             Patient Engagement
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             {timeRange?.period === "7d"
               ? "Last 7 days"
               : timeRange?.period === "30d"
@@ -129,9 +134,12 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
         <div className="h-64 flex items-end space-x-1">
           {chartData.map((item, index) => {
             const newPatientsHeight = (item.newPatients / maxPatients) * 100;
-            const activePatientsHeight = (item.activePatients / maxPatients) * 100;
-            const renewedPatientsHeight = (item.renewedPatients / maxPatients) * 100;
-            const expiredPatientsHeight = (item.expiredPatients / maxPatients) * 100;
+            const activePatientsHeight =
+              (item.activePatients / maxPatients) * 100;
+            const renewedPatientsHeight =
+              (item.renewedPatients / maxPatients) * 100;
+            const expiredPatientsHeight =
+              (item.expiredPatients / maxPatients) * 100;
 
             return (
               <div
@@ -185,7 +193,7 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
                 </div>
 
                 {/* Date Label */}
-                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center">
+                <div className="mt-2 text-xs text-gray-600 text-center">
                   {new Date(item.date).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -201,45 +209,39 @@ export const PatientEngagementChart: React.FC<PatientEngagementChartProps> = ({
       <div className="mt-6 flex items-center justify-center space-x-4">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-green-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600">
             New Patients
           </span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-blue-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Active
-          </span>
+          <span className="text-sm text-gray-600">Active</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-purple-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Renewed
-          </span>
+          <span className="text-sm text-gray-600">Renewed</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-red-500 rounded"></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Expired
-          </span>
+          <span className="text-sm text-gray-600">Expired</span>
         </div>
       </div>
 
       {/* Summary Stats */}
-      <div className="mt-6 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-6 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
         <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="text-2xl font-semibold text-gray-900text-white">
             {chartData.reduce((sum, item) => sum + item.newPatients, 0)}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600">
             Total New Patients
           </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="text-2xl font-semibold text-gray-900text-white">
             {chartData.reduce((sum, item) => sum + item.renewedPatients, 0)}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600">
             Total Renewals
           </div>
         </div>
