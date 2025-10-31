@@ -245,6 +245,30 @@ export default function MessageHistoryPage() {
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </button>
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch("/api/messages/retry-failed", {
+                  method: "POST",
+                });
+                if (!res.ok) {
+                  const e = await res.json();
+                  throw new Error(e.error || "Failed to retry failed messages");
+                }
+                await refetch();
+              } catch (e) {
+                console.error(e);
+                alert(
+                  e instanceof Error ? e.message : "Retry all failed failed"
+                );
+              }
+            }}
+            className="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+            title="Retry all failed messages"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Retry All Failed
+          </button>
         </div>
       </div>
 
@@ -364,7 +388,7 @@ export default function MessageHistoryPage() {
                     Contact
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone
+                    Phone / Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Campaign
@@ -405,8 +429,26 @@ export default function MessageHistoryPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex items-center">
-                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                        {message.phone_number}
+                        {message.phone_number ? (
+                          <>
+                            <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                            {message.phone_number}
+                          </>
+                        ) : (
+                          <>
+                            {/* fallback to email */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-4 h-4 mr-2 text-gray-400"
+                            >
+                              <path d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5A2.25 2.25 0 0122.5 6.75v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.25-.75a.75.75 0 00-.75.75v.243l8.579 5.149a.75.75 0 00.842 0L21 7.493V6.75a.75.75 0 00-.75-.75H3.75zm16.5 3.078l-7.93 4.76a2.25 2.25 0 01-2.54 0L1.5 9.078v8.172c0 .414.336.75.75.75h16.5a.75.75 0 00.75-.75V9.078z" />
+                            </svg>
+                            {/** @ts-ignore */}
+                            {message.email || "-"}
+                          </>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
