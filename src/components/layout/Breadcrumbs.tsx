@@ -11,8 +11,13 @@ export function Breadcrumbs({ currentPath, items }: BreadcrumbsProps) {
   const breadcrumbs =
     items.length > 0 ? items : generateBreadcrumbs(currentPath);
 
-  // Don't show breadcrumbs on home page
-  if (currentPath === "/" || breadcrumbs.length <= 1) {
+  // Don't show breadcrumbs on home page (redirects to /dashboard)
+  if (currentPath === "/") {
+    return null;
+  }
+
+  // Only show if there are breadcrumbs to display
+  if (breadcrumbs.length === 0) {
     return null;
   }
 

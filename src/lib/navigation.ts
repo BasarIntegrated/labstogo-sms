@@ -47,11 +47,21 @@ export function generateBreadcrumbs(currentPath: string): BreadcrumbItem[] {
   const pathSegments = currentPath.split("/").filter(Boolean);
   const breadcrumbs: BreadcrumbItem[] = [];
 
-  // Always start with home
+  // Special case: if we're on /dashboard, just show "Dashboard"
+  if (currentPath === "/dashboard") {
+    breadcrumbs.push({
+      label: "Dashboard",
+      href: "/dashboard",
+      isActive: true,
+    });
+    return breadcrumbs;
+  }
+
+  // Always start with Home (which redirects to /dashboard)
   breadcrumbs.push({
-    label: "Dashboard",
-    href: "/",
-    isActive: currentPath === "/",
+    label: "Home",
+    href: "/dashboard",
+    isActive: false,
   });
 
   // Build breadcrumbs from path segments
@@ -60,8 +70,14 @@ export function generateBreadcrumbs(currentPath: string): BreadcrumbItem[] {
     currentHref += `/${segment}`;
     const isLast = index === pathSegments.length - 1;
 
+    // Use friendly labels for common routes
+    let label = formatBreadcrumbLabel(segment);
+    if (segment === "dashboard") {
+      label = "Dashboard";
+    }
+
     breadcrumbs.push({
-      label: formatBreadcrumbLabel(segment),
+      label,
       href: currentHref,
       isActive: isLast,
     });
