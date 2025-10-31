@@ -66,11 +66,13 @@ export const RecentCampaignsTable: React.FC = () => {
       ?.sort((a, b) => (b.sent_count || 0) - (a.sent_count || 0))
       .slice(0, 5) || [];
 
-  // Calculate delivery rate (simplified - using sent_count vs recipient count)
+  // Calculate delivery rate: SMS uses delivered/sent; Email treats sent as delivered (no receipts)
   const getDeliveryRate = (campaign: Campaign) => {
-    const recipients = campaign.recipient_contacts?.length || 0;
     const sent = campaign.sent_count || 0;
-    return recipients > 0 ? Math.round((sent / recipients) * 100) : 0;
+    if (sent === 0) return 0;
+    if (campaign.campaign_type === "email") return 100;
+    const delivered = campaign.delivered_count || 0;
+    return Math.min(100, Math.round((delivered / sent) * 100));
   };
 
   return (

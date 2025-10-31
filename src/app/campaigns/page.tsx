@@ -335,10 +335,14 @@ export default function CampaignsPage() {
   };
 
   const getDeliveryRate = (campaign: Campaign) => {
-    if (!campaign.sent_count || campaign.sent_count === 0) return 0;
-    return Math.round(
-      ((campaign.delivered_count || 0) / campaign.sent_count) * 100
-    );
+    const sent = campaign.sent_count || 0;
+    if (sent === 0) return 0;
+    // For email campaigns, treat "sent" as delivered (no delivery receipts)
+    if (campaign.campaign_type === "email") {
+      return 100;
+    }
+    const delivered = campaign.delivered_count || 0;
+    return Math.min(100, Math.round((delivered / sent) * 100));
   };
 
   return (

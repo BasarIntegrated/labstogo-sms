@@ -34,7 +34,66 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ campaigns });
+    // Enrich campaigns with normalized metrics
+    const enriched = await Promise.all(
+      (campaigns || []).map(async (c) => {
+        const id = c.id;
+        const isEmail = c.campaign_type === "email";
+
+        // Compute total_recipients based on campaign type and valid contact fields
+        let totalRecipients = 0;
+        if (
+          Array.isArray(c.recipient_contacts) &&
+          c.recipient_contacts.length
+        ) {
+          const { data: contactsData } = await supabaseAdmin
+            .from("contacts")
+            .select("id, email, phone_number")
+            .in("id", c.recipient_contacts);
+          if (contactsData) {
+            totalRecipients = isEmail
+              ? contactsData.filter(
+                  (ct: any) => ct.email && String(ct.email).trim() !== ""
+                ).length
+              : contactsData.filter(
+                  (ct: any) =>
+                    ct.phone_number && String(ct.phone_number).trim() !== ""
+                ).length;
+          }
+        }
+
+        // Aggregate message counts from the appropriate table
+        const table = isEmail ? "email_messages" : "sms_messages";
+        const [{ count: sent }, { count: delivered }, { count: failed }] =
+          await Promise.all([
+            supabaseAdmin
+              .from(table)
+              .select("*", { count: "exact", head: true })
+              .eq("campaign_id", id)
+              .eq("status", "sent"),
+            supabaseAdmin
+              .from(table)
+              .select("*", { count: "exact", head: true })
+              .eq("campaign_id", id)
+              .eq("status", "delivered"),
+            supabaseAdmin
+              .from(table)
+              .select("*", { count: "exact", head: true })
+              .eq("campaign_id", id)
+              .eq("status", "failed"),
+          ]);
+
+        return {
+          ...c,
+          total_recipients: totalRecipients,
+          sent_count: sent || 0,
+          delivered_count: delivered || 0,
+          failed_count: failed || 0,
+        };
+      })
+    );
+
+    return NextResponse.json({ campaigns: enriched });
   } catch (error) {
     console.error("Error in campaigns GET:", error);
     return NextResponse.json(

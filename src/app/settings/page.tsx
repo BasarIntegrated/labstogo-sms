@@ -204,61 +204,6 @@ export default function SettingsPage() {
                     </button>
                   </div>
 
-                  {/* Sandbox Mode Status */}
-                  {settings.sms.sandboxMode && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <AlertTriangle className="h-5 w-5 text-blue-400" />
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-blue-800">
-                            Sandbox Mode Active - SMS testing environment
-                          </h3>
-                          <div className="mt-2 text-sm text-blue-700">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium">FREE</span>
-                              <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                                Sandbox Configuration
-                              </span>
-                            </div>
-                            <p className="mb-2">Current SMS testing settings</p>
-                            <div className="space-y-1 text-xs">
-                              <div>
-                                <strong>From Number:</strong> +15005550006
-                              </div>
-                              <div>
-                                <strong>Cost:</strong> FREE
-                              </div>
-                            </div>
-                            <div className="mt-3 p-2 bg-blue-100 rounded text-xs">
-                              <strong>Important:</strong> Only verified phone
-                              numbers can receive SMS in sandbox mode.
-                              <br />
-                              <a
-                                href="https://console.twilio.com/us1/develop/sms/try-it-out/send-an-sms"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline"
-                              >
-                                Verify your number in Twilio Console
-                              </a>
-                            </div>
-                            <div className="mt-2">
-                              <strong>Benefits:</strong>
-                              <ul className="list-disc list-inside mt-1 space-y-1">
-                                <li>No charges for SMS sent</li>
-                                <li>Full API functionality</li>
-                                <li>Safe testing environment</li>
-                                <li>Messages prefixed with [SANDBOX]</li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Sandbox Mode Toggle */}
                     <div className="md:col-span-2">
@@ -268,8 +213,9 @@ export default function SettingsPage() {
                             Sandbox Mode
                           </h4>
                           <p className="text-sm text-gray-500">
-                            Enable sandbox mode for free SMS testing (only
-                            verified numbers)
+                            Enable sandbox mode to route all SMS to your
+                            Verified Number (catch-all). Adds [SANDBOX] and
+                            [TEST] prefixes and prevents real sends.
                           </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -413,7 +359,8 @@ export default function SettingsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Optional: Use API Key instead of Auth Token (starts with SK)
+                        Optional: Use API Key instead of Auth Token (starts with
+                        SK)
                       </p>
                     </div>
                     <div>
@@ -536,7 +483,9 @@ export default function SettingsPage() {
                             Email Sandbox Mode
                           </h4>
                           <p className="text-sm text-gray-500">
-                            Route all emails to test address instead of real recipients
+                            Route all emails to the Test Email Address
+                            (catch-all). Adds [SANDBOX - Original: address] to
+                            the subject.
                           </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">

@@ -144,14 +144,26 @@ export default function CampaignMonitoring({
     0;
   const failedCount =
     messages?.filter((msg: SMSMessage) => msg.status === "failed").length || 0;
-  const pendingCount = totalRecipients - sentCount - failedCount;
+  const pendingCount = Math.max(0, totalRecipients - sentCount - failedCount);
+
+  // Delivery rate: for email campaigns, we treat "sent" as effectively delivered
+  // because we don't receive delivery receipts from SendGrid by default.
+  const isEmailCampaign = campaign?.campaign_type === "email";
+  const deliveredForRate = isEmailCampaign
+    ? messages?.filter(
+        (msg: SMSMessage) => msg.status === "delivered" || msg.status === "sent"
+      ).length || 0
+    : deliveredCount;
 
   // Safe division to avoid NaN
   const deliveryRate =
-    sentCount > 0 ? Math.round((deliveredCount / sentCount) * 100) : 0;
+    sentCount > 0 ? Math.round((deliveredForRate / sentCount) * 100) : 0;
   const overallProgress =
     totalRecipients > 0
-      ? Math.round(((sentCount + failedCount) / totalRecipients) * 100)
+      ? Math.min(
+          100,
+          Math.round(((sentCount + failedCount) / totalRecipients) * 100)
+        )
       : 0;
 
   const getStatusColor = (status: string) => {
