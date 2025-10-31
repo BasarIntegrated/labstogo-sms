@@ -52,7 +52,7 @@ export default function CampaignComposer({
     description: "",
     message_template: "",
     template_id: "",
-    campaign_type: "general",
+    campaign_type: "sms",
     status: "draft",
     recipient_type: "all",
     recipient_groups: [],
@@ -71,7 +71,7 @@ export default function CampaignComposer({
         description: "",
         message_template: "",
         template_id: "",
-        campaign_type: "general",
+        campaign_type: "sms",
         status: "draft",
         recipient_type: "all",
         recipient_groups: [],
@@ -154,11 +154,7 @@ export default function CampaignComposer({
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="general">SMS Campaign</option>
-                    <option value="appointment_reminder">
-                      Appointment Reminder (SMS)
-                    </option>
-                    <option value="custom">Custom (SMS)</option>
+                    <option value="sms">SMS Campaign</option>
                     <option value="email">Email Campaign</option>
                   </select>
                 </div>

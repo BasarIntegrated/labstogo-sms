@@ -553,7 +553,7 @@ export default function CampaignsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                          {campaign.campaign_type || "general"}
+                          {campaign.campaign_type || "sms"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

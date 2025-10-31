@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       name,
       description,
       message_template,
-      campaign_type = "general",
+      campaign_type = "sms",
       status = "draft",
       recipient_type = "all",
       recipient_groups,
