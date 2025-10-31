@@ -247,6 +247,13 @@ export default function MessageHistoryPage() {
           </button>
           <button
             onClick={async () => {
+              if (
+                !confirm(
+                  "Are you sure you want to retry all failed messages? This will reset their status to pending and increment retry counts."
+                )
+              ) {
+                return;
+              }
               try {
                 const res = await fetch("/api/messages/retry-failed", {
                   method: "POST",
@@ -255,6 +262,10 @@ export default function MessageHistoryPage() {
                   const e = await res.json();
                   throw new Error(e.error || "Failed to retry failed messages");
                 }
+                const result = await res.json();
+                alert(
+                  `Successfully retried ${result.retriedSms || 0} SMS and ${result.retriedEmail || 0} Email messages.`
+                );
                 await refetch();
               } catch (e) {
                 console.error(e);
