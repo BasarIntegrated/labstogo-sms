@@ -48,7 +48,56 @@ export const MessagesTimelineChart: React.FC = () => {
     );
   }
 
-  const chartData = data || [];
+  // Toggle mock data for visual verification
+  const USE_MOCK = false;
+  const mockData: TimelineData[] = [
+    { date: new Date().toISOString(), sms: 1, email: 0 },
+    {
+      date: new Date(Date.now() - 1 * 86400000).toISOString(),
+      sms: 7,
+      email: 0,
+    },
+    {
+      date: new Date(Date.now() - 2 * 86400000).toISOString(),
+      sms: 0,
+      email: 25,
+    },
+    {
+      date: new Date(Date.now() - 3 * 86400000).toISOString(),
+      sms: 3,
+      email: 4,
+    },
+    {
+      date: new Date(Date.now() - 4 * 86400000).toISOString(),
+      sms: 12,
+      email: 6,
+    },
+  ];
+  const rawData = USE_MOCK ? mockData : data || [];
+  // Build last 30 days (today inclusive) and fill missing days with zeros
+  const toDayKey = (d: Date) => d.toISOString().split("T")[0];
+  const end = new Date();
+  end.setHours(0, 0, 0, 0);
+  const dayKeys: string[] = Array.from({ length: 30 }).map((_, i) => {
+    const d = new Date(end);
+    d.setDate(end.getDate() - (29 - i));
+    return toDayKey(d);
+  });
+  const byKey: Record<string, { sms: number; email: number }> = {};
+  for (const item of rawData) {
+    const key = toDayKey(new Date(item.date));
+    const prev = byKey[key] || { sms: 0, email: 0 };
+    byKey[key] = {
+      sms: prev.sms + (item.sms || 0),
+      email: prev.email + (item.email || 0),
+    };
+  }
+  const chartData = dayKeys.map((key) => ({
+    date: new Date(key).toISOString(),
+    sms: byKey[key]?.sms || 0,
+    email: byKey[key]?.email || 0,
+  }));
+  // Use absolute maximum to preserve proportional differences (e.g., 1 vs 7 vs 25)
   const maxMessages = Math.max(
     ...chartData.map((d) => Math.max(d.sms, d.email)),
     1
@@ -65,30 +114,24 @@ export const MessagesTimelineChart: React.FC = () => {
       </div>
 
       {/* Chart */}
-      <div className="relative mb-12">
-        <div className="h-64 flex items-end space-x-0.5 pb-6">
+      <div className="relative mb-8">
+        <div className="h-72 flex items-end space-x-0.5 pb-6">
           {chartData.map((item, index) => {
             // Calculate heights with minimum visible height for non-zero values
-            const smsHeight =
-              maxMessages > 0
-                ? Math.max((item.sms / maxMessages) * 100, item.sms > 0 ? 2 : 0)
-                : 0;
-            const emailHeight =
-              maxMessages > 0
-                ? Math.max(
-                    (item.email / maxMessages) * 100,
-                    item.email > 0 ? 2 : 0
-                  )
-                : 0;
+            const smsRatio = maxMessages > 0 ? item.sms / maxMessages : 0;
+            const emailRatio = maxMessages > 0 ? item.email / maxMessages : 0;
+            // Linear scaling against absolute max
+            const smsHeight = Math.min(100, Math.max(smsRatio * 100, 0));
+            const emailHeight = Math.min(100, Math.max(emailRatio * 100, 0));
 
             return (
               <div
                 key={index}
-                className="flex-1 flex flex-col items-center relative"
+                className="flex-1 h-full flex flex-col items-center relative"
               >
                 <div className="w-full h-full flex items-end justify-center space-x-0.5">
                   {/* SMS Bar - Independent hover group */}
-                  <div className="flex-1 flex flex-col items-center group/sms relative">
+                  <div className="flex-1 h-full flex flex-col justify-end items-center group/sms relative">
                     <div
                       className="w-full bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer relative"
                       style={{
@@ -108,7 +151,7 @@ export const MessagesTimelineChart: React.FC = () => {
                   </div>
 
                   {/* Email Bar - Independent hover group */}
-                  <div className="flex-1 flex flex-col items-center group/email relative">
+                  <div className="flex-1 h-full flex flex-col justify-end items-center group/email relative">
                     <div
                       className="w-full bg-purple-500 rounded-t hover:bg-purple-600 transition-colors cursor-pointer relative"
                       style={{
