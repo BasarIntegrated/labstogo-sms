@@ -269,6 +269,12 @@ export default function CampaignMonitoring({
                 ? new Date(safeCampaign.sent_at).toLocaleString()
                 : "Not started"}
             </p>
+            {safeCampaign.status !== "active" && (
+              <div className="mt-3 text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 rounded p-3">
+                <span className="font-medium">Paused:</span> Messages will remain
+                pending and won’t be processed until the campaign is resumed.
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             <div

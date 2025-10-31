@@ -22,6 +22,7 @@ interface CampaignComposerProps {
 
 // Available merge tags for campaigns
 const availableMergeTags = [
+  "{full_name}",
   "{first_name}",
   "{last_name}",
   "{email}",
@@ -253,6 +254,7 @@ export default function CampaignComposer({
                   </h4>
                   <div className="text-sm text-gray-700 mb-3 bg-white p-3 rounded border">
                     {formData.message_template
+                      .replace(/\{full_name\}/g, "John Doe")
                       .replace(/\{first_name\}/g, "John")
                       .replace(/\{last_name\}/g, "Doe")
                       .replace(/\{company_name\}/g, "Acme Corp")
