@@ -264,7 +264,9 @@ export default function MessageHistoryPage() {
                 }
                 const result = await res.json();
                 alert(
-                  `Successfully retried ${result.retriedSms || 0} SMS and ${result.retriedEmail || 0} Email messages.`
+                  `Successfully retried ${result.retriedSms || 0} SMS and ${
+                    result.retriedEmail || 0
+                  } Email messages.`
                 );
                 await refetch();
               } catch (e) {
