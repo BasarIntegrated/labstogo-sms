@@ -7,15 +7,12 @@ import {
 } from "@/hooks/useSettings";
 import {
   AlertTriangle,
-  Bell,
   CheckCircle,
   Database,
   Mail,
   MessageSquare,
   RefreshCw,
   Save,
-  Settings,
-  Shield,
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,36 +27,18 @@ interface SystemSettings {
     rateLimit: number;
     retryAttempts: number;
     sandboxMode: boolean;
+    verifiedNumber: string;
+    apiKeySid: string;
+    apiKeySecret: string;
   };
-  // Email Settings
+  // Email Settings (SendGrid)
   email: {
     provider: string;
-    smtpHost: string;
-    smtpPort: number;
-    username: string;
-    password: string;
+    sendgridApiKey: string;
     fromEmail: string;
-  };
-  // General Settings
-  general: {
-    appName: string;
-    timezone: string;
-    dateFormat: string;
-    language: string;
-  };
-  // Notification Settings
-  notifications: {
-    emailNotifications: boolean;
-    smsNotifications: boolean;
-    campaignAlerts: boolean;
-    errorAlerts: boolean;
-  };
-  // Security Settings
-  security: {
-    sessionTimeout: number;
-    requireTwoFactor: boolean;
-    allowedDomains: string[];
-    maxLoginAttempts: number;
+    fromName: string;
+    sandboxMode: boolean;
+    testEmailAddress: string;
   };
 }
 
@@ -72,38 +51,23 @@ const defaultSettings: SystemSettings = {
     rateLimit: 100,
     retryAttempts: 3,
     sandboxMode: false,
+    verifiedNumber: "",
+    apiKeySid: "",
+    apiKeySecret: "",
   },
   email: {
-    provider: "smtp",
-    smtpHost: "",
-    smtpPort: 587,
-    username: "",
-    password: "",
+    provider: "sendgrid",
+    sendgridApiKey: "",
     fromEmail: "",
-  },
-  general: {
-    appName: "LabsToGo SMS Blaster",
-    timezone: "America/New_York",
-    dateFormat: "MM/DD/YYYY",
-    language: "en",
-  },
-  notifications: {
-    emailNotifications: true,
-    smsNotifications: false,
-    campaignAlerts: true,
-    errorAlerts: true,
-  },
-  security: {
-    sessionTimeout: 30,
-    requireTwoFactor: false,
-    allowedDomains: [],
-    maxLoginAttempts: 5,
+    fromName: "LabsToGo",
+    sandboxMode: false,
+    testEmailAddress: "",
   },
 };
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("sms");
   const [testResults, setTestResults] = useState<Record<string, any>>({});
 
   // React Query hooks
@@ -154,11 +118,8 @@ export default function SettingsPage() {
   };
 
   const tabs = [
-    { id: "general", label: "General", icon: Settings },
     { id: "sms", label: "SMS", icon: MessageSquare },
     { id: "email", label: "Email", icon: Mail },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security", icon: Shield },
     { id: "database", label: "Database", icon: Database },
   ];
 
@@ -218,82 +179,6 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              {/* General Settings */}
-              {activeTab === "general" && (
-                <div>
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-                    General Settings
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Application Name
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.general.appName}
-                        onChange={(e) =>
-                          updateSetting("general", "appName", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Timezone
-                      </label>
-                      <select
-                        value={settings.general.timezone}
-                        onChange={(e) =>
-                          updateSetting("general", "timezone", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="America/New_York">Eastern Time</option>
-                        <option value="America/Chicago">Central Time</option>
-                        <option value="America/Denver">Mountain Time</option>
-                        <option value="America/Los_Angeles">
-                          Pacific Time
-                        </option>
-                        <option value="UTC">UTC</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Date Format
-                      </label>
-                      <select
-                        value={settings.general.dateFormat}
-                        onChange={(e) =>
-                          updateSetting("general", "dateFormat", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Language
-                      </label>
-                      <select
-                        value={settings.general.language}
-                        onChange={(e) =>
-                          updateSetting("general", "language", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* SMS Settings */}
               {activeTab === "sms" && (
                 <div>
@@ -497,6 +382,57 @@ export default function SettingsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Verified Number
+                      </label>
+                      <input
+                        type="tel"
+                        value={settings.sms.verifiedNumber}
+                        onChange={(e) =>
+                          updateSetting("sms", "verifiedNumber", e.target.value)
+                        }
+                        placeholder="+639064763851"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Verified phone number for sandbox mode
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        API Key SID (Optional)
+                      </label>
+                      <input
+                        type="password"
+                        value={settings.sms.apiKeySid}
+                        onChange={(e) =>
+                          updateSetting("sms", "apiKeySid", e.target.value)
+                        }
+                        placeholder="SK..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Optional: Use API Key instead of Auth Token (starts with SK)
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        API Key Secret (Optional)
+                      </label>
+                      <input
+                        type="password"
+                        value={settings.sms.apiKeySecret}
+                        onChange={(e) =>
+                          updateSetting("sms", "apiKeySecret", e.target.value)
+                        }
+                        placeholder="API Key Secret"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Required if using API Key authentication
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -525,69 +461,46 @@ export default function SettingsPage() {
                       )}
                     </button>
                   </div>
+                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-800">
+                      <strong>SendGrid Integration:</strong> Email campaigns use
+                      SendGrid API for delivery. Enter your SendGrid API key
+                      below.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        SMTP Host
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.email.smtpHost}
-                        onChange={(e) =>
-                          updateSetting("email", "smtpHost", e.target.value)
-                        }
-                        placeholder="smtp.gmail.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        SMTP Port
-                      </label>
-                      <input
-                        type="number"
-                        value={settings.email.smtpPort}
-                        onChange={(e) =>
-                          updateSetting(
-                            "email",
-                            "smtpPort",
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.email.username}
-                        onChange={(e) =>
-                          updateSetting("email", "username", e.target.value)
-                        }
-                        placeholder="your-email@gmail.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Password
+                        SendGrid API Key <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="password"
-                        value={settings.email.password}
+                        value={settings.email.sendgridApiKey}
                         onChange={(e) =>
-                          updateSetting("email", "password", e.target.value)
+                          updateSetting(
+                            "email",
+                            "sendgridApiKey",
+                            e.target.value
+                          )
                         }
-                        placeholder="App password"
+                        placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Get your API key from{" "}
+                        <a
+                          href="https://app.sendgrid.com/settings/api_keys"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          SendGrid API Keys
+                        </a>
+                      </p>
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        From Email
+                        From Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -598,205 +511,71 @@ export default function SettingsPage() {
                         placeholder="noreply@yourdomain.com"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Notification Settings */}
-              {activeTab === "notifications" && (
-                <div>
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-                    Notification Preferences
-                  </h3>
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          Email Notifications
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Receive notifications via email
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.notifications.emailNotifications}
-                          onChange={(e) =>
-                            updateSetting(
-                              "notifications",
-                              "emailNotifications",
-                              e.target.checked
-                            )
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          SMS Notifications
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Receive notifications via SMS
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.notifications.smsNotifications}
-                          onChange={(e) =>
-                            updateSetting(
-                              "notifications",
-                              "smsNotifications",
-                              e.target.checked
-                            )
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          Campaign Alerts
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Get notified when campaigns complete
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.notifications.campaignAlerts}
-                          onChange={(e) =>
-                            updateSetting(
-                              "notifications",
-                              "campaignAlerts",
-                              e.target.checked
-                            )
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          Error Alerts
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Get notified of system errors
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.notifications.errorAlerts}
-                          onChange={(e) =>
-                            updateSetting(
-                              "notifications",
-                              "errorAlerts",
-                              e.target.checked
-                            )
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Security Settings */}
-              {activeTab === "security" && (
-                <div>
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-                    Security Settings
-                  </h3>
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Session Timeout (minutes)
-                      </label>
-                      <input
-                        type="number"
-                        value={settings.security.sessionTimeout}
-                        onChange={(e) =>
-                          updateSetting(
-                            "security",
-                            "sessionTimeout",
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          Two-Factor Authentication
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Require 2FA for all users
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.security.requireTwoFactor}
-                          onChange={(e) =>
-                            updateSetting(
-                              "security",
-                              "requireTwoFactor",
-                              e.target.checked
-                            )
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Must be verified in SendGrid
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Max Login Attempts
-                      </label>
-                      <input
-                        type="number"
-                        value={settings.security.maxLoginAttempts}
-                        onChange={(e) =>
-                          updateSetting(
-                            "security",
-                            "maxLoginAttempts",
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Allowed Domains (comma-separated)
+                        From Name
                       </label>
                       <input
                         type="text"
-                        value={settings.security.allowedDomains.join(", ")}
+                        value={settings.email.fromName}
                         onChange={(e) =>
-                          updateSetting(
-                            "security",
-                            "allowedDomains",
-                            e.target.value.split(", ").filter((d) => d.trim())
-                          )
+                          updateSetting("email", "fromName", e.target.value)
                         }
-                        placeholder="company.com, partner.com"
+                        placeholder="LabsToGo"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            Email Sandbox Mode
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            Route all emails to test address instead of real recipients
+                          </p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={settings.email.sandboxMode}
+                            onChange={(e) =>
+                              updateSetting(
+                                "email",
+                                "sandboxMode",
+                                e.target.checked
+                              )
+                            }
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Test Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={settings.email.testEmailAddress}
+                        onChange={(e) =>
+                          updateSetting(
+                            "email",
+                            "testEmailAddress",
+                            e.target.value
+                          )
+                        }
+                        placeholder="roel.abasa@gmail.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Email address for sandbox mode testing
+                      </p>
                     </div>
                   </div>
                 </div>

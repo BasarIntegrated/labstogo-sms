@@ -9,32 +9,17 @@ interface SystemSettings {
     rateLimit: number;
     retryAttempts: number;
     sandboxMode: boolean;
+    verifiedNumber: string;
+    apiKeySid: string;
+    apiKeySecret: string;
   };
   email: {
     provider: string;
-    smtpHost: string;
-    smtpPort: number;
-    username: string;
-    password: string;
+    sendgridApiKey: string;
     fromEmail: string;
-  };
-  general: {
-    appName: string;
-    timezone: string;
-    dateFormat: string;
-    language: string;
-  };
-  notifications: {
-    emailNotifications: boolean;
-    smsNotifications: boolean;
-    campaignAlerts: boolean;
-    errorAlerts: boolean;
-  };
-  security: {
-    sessionTimeout: number;
-    requireTwoFactor: boolean;
-    allowedDomains: string[];
-    maxLoginAttempts: number;
+    fromName: string;
+    sandboxMode: boolean;
+    testEmailAddress: string;
   };
 }
 
